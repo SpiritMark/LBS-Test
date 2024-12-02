@@ -14,11 +14,13 @@
   },
   "dependencies": {
     "@ant-design/icons-vue": "^7.0.1",
+    "@electron/remote": "^2.1.2",
     "ant-design-vue": "^4.0.7",
     "axios": "^1.6.2",
     "highlight.js": "^11.9.0",
     "pinia": "^2.1.7",
     "vue": "^3.3.9",
+    "vue-i18n": "^9.8.0",
     "vue-router": "^4.2.5"
   },
   "devDependencies": {
@@ -50,9 +52,30 @@
       "category": "public.app-category.developer-tools",
       "icon": "build/icons/icon.icns",
       "target": [
-        "dmg",
-        "zip"
-      ]
+        {
+          "target": "dmg",
+          "arch": [
+            "arm64",
+            "x64"
+          ]
+        },
+        {
+          "target": "zip",
+          "arch": [
+            "arm64",
+            "x64"
+          ]
+        }
+      ],
+      "hardenedRuntime": true,
+      "gatekeeperAssess": false,
+      "entitlements": "build/entitlements.mac.plist",
+      "entitlementsInherit": "build/entitlements.mac.plist",
+      "extendInfo": {
+        "NSMicrophoneUsageDescription": "请允许访问麦克风",
+        "NSCameraUsageDescription": "请允许访问摄像头",
+        "LSMinimumSystemVersion": "10.12.0"
+      }
     },
     "win": {
       "icon": "build/icons/icon.ico",
@@ -74,6 +97,7 @@
     },
     "dmg": {
       "icon": "build/icons/icon.icns",
+      "sign": false,
       "contents": [
         {
           "x": 410,
@@ -86,7 +110,11 @@
           "y": 150,
           "type": "file"
         }
-      ]
+      ],
+      "window": {
+        "width": 540,
+        "height": 380
+      }
     },
     "nsis": {
       "oneClick": false,

@@ -1,0 +1,19 @@
+{
+  "history": {
+    "title": "History",
+    "save": "Save Request",
+    "clear": "Clear All",
+    "empty": "No history records",
+    "name": "Request Name",
+    "namePlaceholder": "Enter request name",
+    "nameRequired": "Please enter request name",
+    "saveSuccess": "Request saved successfully",
+    "updateSuccess": "Request updated successfully",
+    "deleteTitle": "Delete Request",
+    "deleteMessage": "Are you sure you want to delete this request?",
+    "deleteSuccess": "Request deleted successfully",
+    "clearTitle": "Clear History",
+    "clearMessage": "Are you sure you want to clear all history?",
+    "clearSuccess": "History cleared successfully"
+  }
+} 

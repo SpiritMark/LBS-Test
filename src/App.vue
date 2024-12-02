@@ -1,246 +1,368 @@
 <template>
-  <a-config-provider :theme="themes[appStore.theme]">
-    <div class="app-container" :class="{ 'theme-dark': appStore.theme === 'dark' }">
-      <a-layout :class="{ 'layout-horizontal': appStore.layout === 'horizontal' }">
-        <a-layout-header class="header">
-          <div class="header-content">
-            <div class="logo-section">
-              <div class="logo-animation"></div>
-              <h1>{{ appStore.currentLocale().app.title }}</h1>
-            </div>
-            <div class="header-actions">
-              <a-tooltip :title="t('layouts.horizontal')" placement="bottom">
-                <a-button
-                  class="action-button"
-                  :type="appStore.layout === 'horizontal' ? 'primary' : 'text'"
-                  @click="toggleLayout"
-                >
-                  <template #icon><ColumnHeightOutlined /></template>
-                </a-button>
-              </a-tooltip>
-              <a-tooltip :title="t('app.theme')" placement="bottom">
-                <a-button
-                  class="action-button"
-                  :type="appStore.theme === 'dark' ? 'primary' : 'text'"
-                  @click="toggleTheme"
-                >
-                  <template #icon>
-                    <BulbOutlined v-if="appStore.theme === 'light'" />
-                    <BulbFilled v-else />
-                  </template>
-                </a-button>
-              </a-tooltip>
-              <a-tooltip :title="t('app.language')" placement="bottom">
-                <a-button
-                  class="action-button"
-                  :type="appStore.locale === 'en-US' ? 'primary' : 'text'"
-                  @click="toggleLocale"
-                >
-                  <template #icon>
-                    <TranslationOutlined />
-                  </template>
-                </a-button>
-              </a-tooltip>
-            </div>
+  <a-config-provider :theme="currentTheme.config">
+    <div class="app-container" :style="containerStyle">
+      <a-layout>
+        <a-layout-sider
+          class="app-sider"
+          :collapsed="true"
+          :trigger="null"
+          collapsible
+          width="64"
+        >
+          <div class="logo">
+            <thunderbolt-outlined class="app-logo" />
           </div>
-        </a-layout-header>
-        <a-layout-content :style="contentStyle">
-          <request-panel />
-        </a-layout-content>
+          <a-menu mode="inline" :selected-keys="[activeView]" class="nav-menu">
+            <a-menu-item key="request" @click="switchView('request')" class="nav-item">
+              <template #icon>
+                <api-outlined />
+              </template>
+            </a-menu-item>
+            <a-menu-item key="collection" @click="switchView('collection')" class="nav-item">
+              <template #icon>
+                <folder-outlined />
+              </template>
+            </a-menu-item>
+            <a-menu-item key="history" @click="switchView('history')" class="nav-item">
+              <template #icon>
+                <history-outlined />
+              </template>
+            </a-menu-item>
+          </a-menu>
+        </a-layout-sider>
+        <a-layout>
+          <a-layout-header class="app-header">
+            <div class="header-actions">
+              <a-dropdown :trigger="['click']" placement="bottomRight">
+                <a-button type="text" class="action-button">
+                  <template #icon>
+                    <bg-colors-outlined />
+                  </template>
+                </a-button>
+                <template #overlay>
+                  <a-menu>
+                    <a-menu-item 
+                      v-for="theme in themes" 
+                      :key="theme.key"
+                      @click="appStore.setTheme(theme.key)"
+                    >
+                      <div class="theme-item">
+                        <div class="theme-preview" :style="getThemePreviewStyle(theme)"></div>
+                        {{ theme.name }}
+                      </div>
+                    </a-menu-item>
+                  </a-menu>
+                </template>
+              </a-dropdown>
+              <a-dropdown :trigger="['click']" placement="bottomRight">
+                <a-button type="text" class="action-button">
+                  <template #icon>
+                    <global-outlined />
+                  </template>
+                </a-button>
+                <template #overlay>
+                  <a-menu>
+                    <a-menu-item 
+                      v-for="locale in locales" 
+                      :key="locale"
+                      @click="appStore.setLocale(locale as Locale)"
+                    >
+                      {{ locale === 'zh-CN' ? '中文' : 'English' }}
+                    </a-menu-item>
+                  </a-menu>
+                </template>
+              </a-dropdown>
+              <a-dropdown :trigger="['click']" placement="bottomRight">
+                <a-button type="text" class="action-button">
+                  <template #icon>
+                    <column-width-outlined />
+                  </template>
+                </a-button>
+                <template #overlay>
+                  <a-menu>
+                    <a-menu-item 
+                      v-for="layout in layouts" 
+                      :key="layout"
+                      @click="appStore.setLayout(layout as 'horizontal' | 'vertical')"
+                    >
+                      {{ t(`layouts.${layout}`) }}
+                    </a-menu-item>
+                  </a-menu>
+                </template>
+              </a-dropdown>
+            </div>
+          </a-layout-header>
+          <a-layout-content class="app-content">
+            <div class="main-content">
+              <collection-panel v-show="activeView === 'collection'" />
+              <history-panel v-show="activeView === 'history'" />
+              <request-panel 
+                v-show="activeView === 'request'"
+                ref="requestPanelRef"
+                @load-request="handleLoadRequest"
+              />
+            </div>
+          </a-layout-content>
+        </a-layout>
       </a-layout>
     </div>
   </a-config-provider>
 </template>
 
 <script lang="ts" setup>
-import { computed } from 'vue'
-import RequestPanel from './components/RequestPanel.vue'
+import { ref, computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useAppStore } from './store/app'
-import { themes } from './styles/themes'
+import RequestPanel from './components/RequestPanel.vue'
+import CollectionPanel from './components/CollectionPanel.vue'
+import HistoryPanel from './components/HistoryPanel.vue'
+import { themes, getThemeConfig } from './styles/themes'
 import {
-  BulbOutlined,
-  BulbFilled,
-  TranslationOutlined,
-  ColumnHeightOutlined,
+  ApiOutlined,
+  FolderOutlined,
+  HistoryOutlined,
+  BgColorsOutlined,
+  GlobalOutlined,
+  ColumnWidthOutlined,
+  ThunderboltOutlined
 } from '@ant-design/icons-vue'
+import type { Locale } from './store/app'
 
+const { t } = useI18n()
 const appStore = useAppStore()
+const requestPanelRef = ref()
+const activeView = ref('request')
 
-const contentStyle = computed(() => ({
-  padding: '24px',
-  minHeight: 'calc(100vh - 64px)',
-  backgroundColor: appStore.theme === 'dark' ? '#141414' : '#f0f5ff',
-}))
+const locales = ['zh-CN', 'en-US'] as const
+const layouts = ['horizontal', 'vertical'] as const
 
-const t = (key: string) => {
-  const keys = key.split('.')
-  let value = appStore.currentLocale()
-  for (const k of keys) {
-    value = value[k]
+const currentTheme = computed(() => getThemeConfig(appStore.theme))
+
+const containerStyle = computed(() => {
+  const primaryColor = currentTheme.value.style.colorPrimary
+  const rgb = primaryColor.match(/\w\w/g)?.map(x => parseInt(x, 16)).join(',')
+  
+  return {
+    '--color-bg-layout': currentTheme.value.style.colorBgLayout,
+    '--color-bg-container': currentTheme.value.style.colorBgContainer,
+    '--color-bg-elevated': currentTheme.value.style.colorBgElevated,
+    '--color-primary': primaryColor,
+    '--color-primary-rgb': rgb,
+    '--color-text': currentTheme.value.style.colorText,
+    '--color-text-secondary': currentTheme.value.style.colorTextSecondary,
+    '--border-radius': `${currentTheme.value.style.borderRadius}px`,
+    '--box-shadow': currentTheme.value.style.boxShadow,
+    '--color-border': currentTheme.value.style.colorBorder,
   }
-  return value
+})
+
+const switchView = (view: string) => {
+  activeView.value = view
 }
 
-const toggleTheme = () => {
-  appStore.setTheme(appStore.theme === 'light' ? 'dark' : 'light')
+const handleLoadRequest = (request: any) => {
+  activeView.value = 'request'
+  if (requestPanelRef.value) {
+    requestPanelRef.value.loadRequest(request)
+  }
 }
 
-const toggleLayout = () => {
-  appStore.setLayout(appStore.layout === 'vertical' ? 'horizontal' : 'vertical')
-}
-
-const toggleLocale = () => {
-  appStore.setLocale(appStore.locale === 'zh-CN' ? 'en-US' : 'zh-CN')
-}
+const getThemePreviewStyle = (theme: typeof themes[0]) => ({
+  background: theme.style.colorBgContainer,
+  borderColor: theme.style.colorPrimary
+})
 </script>
 
 <style>
 .app-container {
-  width: 100%;
-  min-height: 100vh;
+  height: 100vh;
+  background: var(--color-bg-layout);
+}
+
+.app-sider {
+  background: var(--color-bg-elevated);
+  box-shadow: var(--box-shadow);
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+}
+
+.logo {
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.app-logo {
+  font-size: 32px;
+  color: var(--color-primary);
+}
+
+.nav-menu {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 16px 0;
+  flex: 1;
+}
+
+.nav-item {
+  margin: 0 8px !important;
+  height: 48px !important;
+  line-height: 48px !important;
+  border-radius: 8px !important;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.nav-item:hover {
+  background: rgba(var(--color-primary-rgb), 0.1) !important;
+}
+
+.nav-item :deep(.anticon) {
+  font-size: 24px;
   transition: all 0.3s;
-  background: linear-gradient(135deg, #f0f5ff 0%, #ffffff 100%);
+  color: var(--color-text-secondary);
 }
 
-.theme-dark .app-container {
-  background: linear-gradient(135deg, #141414 0%, #1f1f1f 100%);
+.nav-item:hover :deep(.anticon) {
+  color: var(--color-primary);
 }
 
-.header {
-  padding: 0 24px;
-  background: linear-gradient(90deg, #1d39c4 0%, #2F54EB 100%);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-  position: relative;
-  z-index: 1;
+.nav-item.ant-menu-item-selected {
+  background: rgba(var(--color-primary-rgb), 0.1) !important;
 }
 
-.theme-dark .header {
-  background: linear-gradient(90deg, #141414 0%, #1f1f1f 100%);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+.nav-item.ant-menu-item-selected :deep(.anticon) {
+  color: var(--color-primary) !important;
 }
 
-.header-content {
+.sider-footer {
+  padding: 16px 0;
   display: flex;
-  justify-content: space-between;
+  flex-direction: column;
+  gap: 16px;
   align-items: center;
+  border-top: 1px solid var(--color-border);
+}
+
+.action-button {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  color: var(--color-text-secondary);
+  transition: all 0.3s;
+  border-radius: 8px;
+}
+
+.action-button:hover {
+  color: var(--color-primary);
+  background: rgba(var(--color-primary-rgb), 0.1);
+}
+
+.theme-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 8px;
+}
+
+.theme-preview {
+  width: 16px;
+  height: 16px;
+  border: 2px solid;
+  border-radius: 4px;
+}
+
+.app-content {
+  padding: 16px;
+  overflow: auto;
+}
+
+.main-content {
   height: 100%;
-  max-width: 1400px;
-  margin: 0 auto;
-}
-
-.logo-section {
   display: flex;
-  align-items: center;
   gap: 16px;
 }
 
-.logo-animation {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.9);
-  position: relative;
-  animation: pulse 2s infinite;
+:deep(.ant-menu-inline-collapsed) {
+  width: 64px !important;
 }
 
-.logo-animation::after {
-  content: '';
-  position: absolute;
-  width: 100%;
-  height: 100%;
-  border-radius: 50%;
-  border: 2px solid rgba(255, 255, 255, 0.5);
-  animation: ripple 2s infinite;
+:deep(.ant-menu-inline-collapsed .ant-menu-item) {
+  padding: 0 !important;
+  text-align: center;
 }
 
-.header h1 {
-  color: white;
-  margin: 0;
-  font-size: 20px;
-  font-weight: 600;
-  letter-spacing: 0.5px;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+:deep(.ant-layout-sider-children) {
+  display: flex;
+  flex-direction: column;
+}
+
+:deep(.ant-menu) {
+  border-inline-end: none !important;
+  background: transparent !important;
+}
+
+:deep(.ant-menu-title-content) {
+  margin-inline-start: 0 !important;
+}
+
+.app-header {
+  background: var(--color-primary);
+  padding: 0 16px;
+  height: 48px;
+  line-height: 48px;
+  box-shadow: var(--box-shadow);
+  z-index: 1;
 }
 
 .header-actions {
   display: flex;
+  gap: 12px;
+  justify-content: flex-end;
   align-items: center;
-  gap: 8px;
+  height: 100%;
 }
 
 .action-button {
   width: 32px;
   height: 32px;
-  padding: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 6px;
-  transition: all 0.3s ease;
-}
-
-.action-button:not(.ant-btn-primary) {
+  font-size: 18px;
   color: rgba(255, 255, 255, 0.85);
-  border: none;
+  transition: all 0.3s;
+  border-radius: 6px;
 }
 
-.action-button:not(.ant-btn-primary):hover {
-  background: rgba(255, 255, 255, 0.1);
-  color: white;
+.action-button:hover {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.15);
 }
 
-.action-button.ant-btn-primary {
-  background: rgba(255, 255, 255, 0.2);
-  border: none;
+.app-content {
+  padding: 16px;
+  overflow: auto;
+  background: var(--color-bg-layout);
 }
 
-.action-button.ant-btn-primary:hover {
-  background: rgba(255, 255, 255, 0.3);
+:deep(.ant-dropdown-menu) {
+  padding: 4px;
+  border-radius: 8px;
 }
 
-.layout-horizontal {
-  display: flex;
-  flex-direction: row;
+:deep(.ant-dropdown-menu-item) {
+  border-radius: 4px;
+  padding: 8px 12px;
 }
 
-@keyframes pulse {
-  0% {
-    transform: scale(0.95);
-    box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.7);
-  }
-  70% {
-    transform: scale(1);
-    box-shadow: 0 0 0 10px rgba(255, 255, 255, 0);
-  }
-  100% {
-    transform: scale(0.95);
-    box-shadow: 0 0 0 0 rgba(255, 255, 255, 0);
-  }
-}
-
-@keyframes ripple {
-  0% {
-    transform: scale(1);
-    opacity: 1;
-  }
-  100% {
-    transform: scale(1.5);
-    opacity: 0;
-  }
-}
-
-@media (max-width: 768px) {
-  .header-content {
-    padding: 0 12px;
-  }
-
-  .header h1 {
-    font-size: 16px;
-  }
-
-  .logo-animation {
-    width: 24px;
-    height: 24px;
-  }
+:deep(.ant-dropdown-menu-item:hover) {
+  background: rgba(var(--color-primary-rgb), 0.1);
 }
 </style> 

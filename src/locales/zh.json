@@ -1,0 +1,25 @@
+{
+  "request": {
+    "send": "发送",
+    "sendAndDownload": "发送并下载",
+    "url": "请输入请求地址",
+    "error": "请求发送失败"
+  },
+  "history": {
+    "title": "历史记录",
+    "save": "保存请求",
+    "clear": "清空",
+    "empty": "暂无历史记录",
+    "name": "请求名称",
+    "namePlaceholder": "请输入请求名称",
+    "nameRequired": "请输入请求名称",
+    "saveSuccess": "请求保存成功",
+    "updateSuccess": "请求更新成功",
+    "deleteTitle": "删除请求",
+    "deleteMessage": "确定要删除这个请求吗？",
+    "deleteSuccess": "请求删除成功",
+    "clearTitle": "清空历史",
+    "clearMessage": "确定要清空所有历史记录吗？",
+    "clearSuccess": "历史记录已清空"
+  }
+} 

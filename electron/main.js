@@ -1,6 +1,6 @@
 const { app, BrowserWindow } = require('electron')
 const path = require('path')
-const isDev = process.env.NODE_ENV === 'development'
+require('@electron/remote/main').initialize()
 
 function createWindow() {
   const win = new BrowserWindow({
@@ -8,16 +8,30 @@ function createWindow() {
     height: 800,
     webPreferences: {
       nodeIntegration: true,
-      contextIsolation: false
+      contextIsolation: false,
+      webSecurity: true,
+      allowRunningInsecureContent: false,
+      enableRemoteModule: true,
+      sandbox: false
     }
   })
 
-  // 加载应用
-  if (isDev) {
-    win.loadURL('http://localhost:5173')
+  require('@electron/remote/main').enable(win.webContents)
+
+  // 设置CSP
+  win.webContents.session.webRequest.onHeadersReceived((details, callback) => {
+    callback({
+      responseHeaders: {
+        ...details.responseHeaders,
+        'Content-Security-Policy': ["default-src 'self' 'unsafe-inline' 'unsafe-eval' data: http: https:"]
+      }
+    })
+  })
+
+  if (process.env.VITE_DEV_SERVER_URL) {
+    win.loadURL(process.env.VITE_DEV_SERVER_URL)
     win.webContents.openDevTools()
   } else {
-    // 生产环境下加载打包后的 index.html
     win.loadFile(path.join(__dirname, '../dist/index.html'))
   }
 }
@@ -36,4 +50,7 @@ app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {
     app.quit()
   }
-}) 
+})
+
+// 禁用警告
+process.env.ELECTRON_DISABLE_SECURITY_WARNINGS = 'true' 

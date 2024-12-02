@@ -8,6 +8,12 @@ export interface RequestHistory {
   bodyType: 'none' | 'json' | 'form-data';
   jsonBody?: string;
   formData?: { key: string; value: string }[];
+  timestamp?: number;
+  response?: {
+    status: number;
+    data: any;
+    time: number;
+  };
   createdAt: number;
   updatedAt: number;
 } 

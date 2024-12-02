@@ -1,43 +1,41 @@
 import { defineStore } from 'pinia'
-import { ref } from 'vue'
-import zhCN from '../locales/zh-CN'
-import enUS from '../locales/en-US'
+import { themes } from '../styles/themes'
+import { i18n } from '../i18n'
 
-type LocaleType = 'zh-CN' | 'en-US'
-type ThemeType = 'light' | 'dark'
-type LayoutType = 'vertical' | 'horizontal'
+type Locale = 'zh-CN' | 'en-US'
 
-const locales = {
-  'zh-CN': zhCN,
-  'en-US': enUS,
-} as const
+interface AppState {
+  theme: string
+  locale: Locale
+  layout: 'horizontal' | 'vertical'
+}
 
-export const useAppStore = defineStore('app', () => {
-  const theme = ref<ThemeType>('light')
-  const layout = ref<LayoutType>('vertical')
-  const locale = ref<LocaleType>('zh-CN')
+export const useAppStore = defineStore('app', {
+  state: (): AppState => {
+    const locale = (localStorage.getItem('locale') || 'zh-CN') as Locale
+    i18n.global.locale.value = locale
+    return {
+      theme: localStorage.getItem('theme') || 'default',
+      locale,
+      layout: (localStorage.getItem('layout') || 'vertical') as 'horizontal' | 'vertical'
+    }
+  },
 
-  const currentLocale = () => locales[locale.value]
+  actions: {
+    setTheme(theme: string) {
+      this.theme = theme
+      localStorage.setItem('theme', theme)
+    },
 
-  const setTheme = (newTheme: ThemeType) => {
-    theme.value = newTheme
-  }
+    setLocale(locale: Locale) {
+      this.locale = locale
+      localStorage.setItem('locale', locale)
+      i18n.global.locale.value = locale
+    },
 
-  const setLayout = (newLayout: LayoutType) => {
-    layout.value = newLayout
-  }
-
-  const setLocale = (newLocale: LocaleType) => {
-    locale.value = newLocale
-  }
-
-  return {
-    theme,
-    layout,
-    locale,
-    currentLocale,
-    setTheme,
-    setLayout,
-    setLocale,
+    setLayout(layout: 'horizontal' | 'vertical') {
+      this.layout = layout
+      localStorage.setItem('layout', layout)
+    }
   }
 }) 

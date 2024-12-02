@@ -1,87 +1,68 @@
-import { RequestHistory } from '../types/history'
-
-const STORAGE_KEY = 'request_history'
+import type { RequestHistory } from '../types/history'
 
 export class HistoryManager {
+  private readonly STORAGE_KEY = 'lbs-test-history'
   private history: RequestHistory[] = []
 
   constructor() {
-    this.loadFromStorage()
+    this.load()
   }
 
-  private loadFromStorage() {
-    const stored = localStorage.getItem(STORAGE_KEY)
-    if (stored) {
-      try {
-        this.history = JSON.parse(stored)
-      } catch (e) {
-        console.error('Failed to load history:', e)
-        this.history = []
+  private load(): void {
+    try {
+      const data = localStorage.getItem(this.STORAGE_KEY)
+      if (data) {
+        this.history = JSON.parse(data)
       }
+    } catch (error) {
+      console.error('Failed to load history:', error)
+      this.history = []
     }
   }
 
-  private saveToStorage() {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(this.history))
+  private save(): void {
+    try {
+      localStorage.setItem(this.STORAGE_KEY, JSON.stringify(this.history))
+    } catch (error) {
+      console.error('Failed to save history:', error)
+    }
   }
 
   getAll(): RequestHistory[] {
-    return [...this.history].sort((a, b) => b.updatedAt - a.updatedAt)
+    return this.history
   }
 
-  add(request: Omit<RequestHistory, 'id' | 'createdAt' | 'updatedAt'>): RequestHistory {
+  add(request: Omit<RequestHistory, 'id' | 'createdAt' | 'updatedAt'>): void {
     const now = Date.now()
-    const newHistory: RequestHistory = {
+    const newRequest: RequestHistory = {
       ...request,
-      id: `hist_${now}_${Math.random().toString(36).substr(2, 9)}`,
+      id: `history_${now}_${Math.random().toString(36).substr(2, 9)}`,
       createdAt: now,
-      updatedAt: now,
+      updatedAt: now
     }
-    this.history.push(newHistory)
-    this.saveToStorage()
-    return newHistory
+    this.history.unshift(newRequest)
+    this.save()
   }
 
-  update(id: string, request: Partial<RequestHistory>): RequestHistory {
-    const index = this.history.findIndex(h => h.id === id)
-    if (index === -1) {
-      throw new Error('History not found')
-    }
-
-    const updatedHistory: RequestHistory = {
-      ...this.history[index],
-      ...request,
-      updatedAt: Date.now(),
-    }
-
-    this.history[index] = updatedHistory
-    this.saveToStorage()
-    return updatedHistory
-  }
-
-  delete(id: string) {
-    const index = this.history.findIndex(h => h.id === id)
+  update(id: string, updates: Partial<RequestHistory>): void {
+    const index = this.history.findIndex(item => item.id === id)
     if (index !== -1) {
-      this.history.splice(index, 1)
-      this.saveToStorage()
+      this.history[index] = {
+        ...this.history[index],
+        ...updates,
+        updatedAt: Date.now()
+      }
+      this.save()
     }
   }
 
-  get(id: string): RequestHistory | undefined {
-    return this.history.find(h => h.id === id)
+  delete(id: string): void {
+    this.history = this.history.filter(item => item.id !== id)
+    this.save()
   }
 
-  search(keyword: string): RequestHistory[] {
-    const lowerKeyword = keyword.toLowerCase()
-    return this.history.filter(h =>
-      h.name.toLowerCase().includes(lowerKeyword) ||
-      h.url.toLowerCase().includes(lowerKeyword) ||
-      h.method.toLowerCase().includes(lowerKeyword)
-    )
-  }
-
-  clear() {
+  clear(): void {
     this.history = []
-    this.saveToStorage()
+    this.save()
   }
 } 
