@@ -2,6 +2,10 @@
 
 English | [简体中文](./README.md)
 
+<img width="1652" alt="image" src="https://github.com/user-attachments/assets/47e99f2a-ee64-48d6-bbf7-16575a955269">
+
+
+
 ![](https://www.kaisir.cn/img/code.gif)
 
 ### Hi there 👋
@@ -10,15 +14,7 @@ English | [简体中文](./README.md)
   <img align="left" alt="Spirit's Github" width="22px" src="https://cdn.jsdelivr.net/npm/simple-icons@v3/icons/github.svg" />
 </a>
 
-<br />
-<br />
 
-Hello! I'm a 25-year-old programmer from Shaoyang, Hunan, China. I'm passionate about programming, enjoy the process of creation, and continuously learning new technologies.
-
-- 🔭 I'm currently working on an API testing tool based on Electron + Vue 3
-- 🌱 I'm currently learning TypeScript and Electron
-- 💬 Feel free to discuss any tech-related topics with me
-- ⚡ Motto: Never stop learning, never stop coding
 
 **Tech Stack:**  
 
