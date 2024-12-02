@@ -1,17 +1,26 @@
-# LBS Test - API 测试工具
+# LBS Test - API Testing Tool
 
-[English](./README_EN.md) | 简体中文
+English | [简体中文](./README.md)
 
 ![](https://www.kaisir.cn/img/code.gif)
 
-### 你好 👋
+### Hi there 👋
 
 <a href="https://github.com/SpiritMark">
   <img align="left" alt="Spirit's Github" width="22px" src="https://cdn.jsdelivr.net/npm/simple-icons@v3/icons/github.svg" />
 </a>
 
+<br />
+<br />
 
-**技术栈:**  
+Hello! I'm a 25-year-old programmer from Shaoyang, Hunan, China. I'm passionate about programming, enjoy the process of creation, and continuously learning new technologies.
+
+- 🔭 I'm currently working on an API testing tool based on Electron + Vue 3
+- 🌱 I'm currently learning TypeScript and Electron
+- 💬 Feel free to discuss any tech-related topics with me
+- ⚡ Motto: Never stop learning, never stop coding
+
+**Tech Stack:**  
 
 <code><img height="20" src="https://raw.githubusercontent.com/github/explore/80688e429a7d4ef2fca1e82350fe8e3517d3494d/topics/javascript/javascript.png"></code>
 <code><img height="20" src="https://raw.githubusercontent.com/github/explore/80688e429a7d4ef2fca1e82350fe8e3517d3494d/topics/typescript/typescript.png"></code>
@@ -19,27 +28,27 @@
 <code><img height="20" src="https://raw.githubusercontent.com/github/explore/80688e429a7d4ef2fca1e82350fe8e3517d3494d/topics/electron/electron.png"></code>
 <code><img height="20" src="https://raw.githubusercontent.com/github/explore/80688e429a7d4ef2fca1e82350fe8e3517d3494d/topics/nodejs/nodejs.png"></code>
 
-## 项目介绍
+## Project Introduction
 
-一个基于 Electron + Vue 3 开发的现代化 API 测试工具，类似于 Postman 的功能实现。
+A modern API testing tool developed with Electron + Vue 3, similar to Postman in functionality.
 
-### 功能特点
+### Features
 
-- 🚀 支持多种 HTTP 请求方法（GET, POST, PUT, DELETE 等）
-- 📝 支持多种请求体格式
+- 🚀 Support for multiple HTTP methods (GET, POST, PUT, DELETE, etc.)
+- 📝 Multiple request body formats
   - form-data
   - x-www-form-urlencoded
   - raw (JSON, Text, JavaScript, HTML, XML)
   - binary
   - GraphQL
-- 🔍 内置 cURL 命令解析器
-- 📦 请求历史记录管理
-- 🎨 支持多种主题（浅色、深色、蓝色、绿色）
-- 🌍 国际化支持（中文、英文）
-- 💾 支持响应数据下载
-- 🖥 跨平台支持 (macOS, Windows, Linux)
+- 🔍 Built-in cURL command parser
+- 📦 Request history management
+- 🎨 Multiple themes (Light, Dark, Blue, Green)
+- 🌍 Internationalization (Chinese, English)
+- 💾 Response data download support
+- 🖥 Cross-platform support (macOS, Windows, Linux)
 
-### 技术栈
+### Tech Stack
 
 - Electron
 - Vue 3
@@ -49,35 +58,39 @@
 - Pinia
 - Axios
 
-### 开发环境要求
+### Requirements
 
 - Node.js >= 16
 - yarn >= 1.22.0
 
-### 安装和运行
+### Installation and Running
 
-1. 克隆项目
+1. Clone the repository
+
 ```bash
-git clone [项目地址]
+git clone [repository URL]
 cd lbs-test
 ```
 
-2. 安装依赖
+2. Install dependencies
+
 ```bash
 yarn install
 ```
 
-3. 开发模式运行
+3. Run in development mode
+
 ```bash
 yarn electron:dev
 ```
 
-4. 构建应用
+4. Build the application
+
 ```bash
 yarn electron:build
 ```
 
-### 项目统计
+### GitHub Stats
 
 <a href="https://github.com/SpiritMark">
   <img align="center" src="https://github-readme-stats.vercel.app/api?username=SpiritMark&show_icons=true&include_all_commits=true&theme=material-palenight" alt="Spirit's github stats" />
@@ -87,19 +100,19 @@ yarn electron:build
   <img align="center" src="https://github-readme-stats.vercel.app/api/top-langs/?username=SpiritMark&layout=compact&theme=material-palenight" />
 </a>
 
-### 项目展示
+### Project Showcase
 
 <a href="https://github.com/SpiritMark/LBS-Test">
   <img align="center" src="https://github-readme-stats.vercel.app/api/pin/?username=SpiritMark&repo=LBS-Test&theme=material-palenight" />
 </a>
 
-## 联系我
+## Contact Me
 
 - Github: [@SpiritMark](https://github.com/SpiritMark)
-- Email: [你的邮箱]
+- Email: [your email]
 
-> 生命不息，编码不止
+> Keep coding, keep moving forward
 
-## 许可证
+## License
 
-MIT License - 详见 [LICENSE](LICENSE) 文件
+MIT License - see [LICENSE](LICENSE) file for details 
