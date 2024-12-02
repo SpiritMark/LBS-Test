@@ -1,6 +1,6 @@
 # LBS Test - API Testing Tool
 
-English | [简体中文](./README.md)
+English | [简体中文](./README_ZH.md)
 
 <img width="1652" alt="image" src="https://github.com/user-attachments/assets/47e99f2a-ee64-48d6-bbf7-16575a955269">
 
