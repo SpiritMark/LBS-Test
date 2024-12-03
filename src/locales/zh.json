@@ -53,5 +53,23 @@
     "clearTitle": "清空历史",
     "clearMessage": "确定要清空所有历史记录吗？",
     "clearSuccess": "历史记录已清空"
+  },
+  "settings": {
+    "title": "设置",
+    "appearance": "外观",
+    "theme": "主题",
+    "language": "语言",
+    "layout": "布局",
+    "editor": "编辑器",
+    "fontSize": "字体大小"
+  },
+  "theme": {
+    "light": "浅色",
+    "dark": "深色",
+    "system": "跟随系统"
+  },
+  "layout": {
+    "default": "默认",
+    "compact": "紧凑"
   }
 } 

@@ -12,6 +12,10 @@
             <div class="history-item-header">
               <span class="history-item-name">{{ item.name || item.url }}</span>
               <div class="history-item-actions">
+                <a-button type="link" @click="loadRequest(item)">
+                  <template #icon><loading-outlined /></template>
+                  {{ t('history.load') }}
+                </a-button>
                 <a-button type="text" @click="editRequest(item)">
                   <template #icon><edit-outlined /></template>
                 </a-button>
@@ -51,7 +55,7 @@ import { ref, computed, onMounted } from 'vue'
 import { useAppStore } from '../store/app'
 import { useI18n } from 'vue-i18n'
 import { message, Modal } from 'ant-design-vue'
-import { EditOutlined, DeleteOutlined } from '@ant-design/icons-vue'
+import { EditOutlined, DeleteOutlined, LoadingOutlined } from '@ant-design/icons-vue'
 import type { RequestHistory } from '../types/history'
 import { HistoryManager } from '../utils/historyManager'
 
@@ -154,6 +158,11 @@ const clearHistory = () => {
       loadHistory()
     },
   })
+}
+
+const loadRequest = (item: RequestHistory) => {
+  emit('load', item)
+  message.success(t('history.loadSuccess'))
 }
 </script>
 

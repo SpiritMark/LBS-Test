@@ -50,11 +50,27 @@ const messages = {
     history: {
       title: '历史记录',
       empty: '暂无历史记录',
-      clear: '清空'
+      clear: '清空',
+      load: '加载',
+      loadSuccess: '加载成功',
+      save: '保存请求',
+      clearSuccess: '历史记录已清空',
+      clearConfirm: '确定要清空历史记录吗？',
+      clearTitle: '清空历史记录',
+      deleteSuccess: '删除成功',
+      saveSuccess: '保存成功',
+      updateSuccess: '更新成功'
     },
     themes: {
       light: '浅色',
-      dark: '深色'
+      dark: '深色',
+      preset: '预设主题',
+      custom: '自定义',
+      mode: '主题模式',
+      primary: '主色',
+      background: '背景色',
+      apply: '应用',
+      reset: '重置'
     },
     layouts: {
       horizontal: '水平布局',
@@ -129,12 +145,28 @@ const messages = {
     },
     history: {
       title: 'History',
-      empty: 'No history',
-      clear: 'Clear'
+      empty: 'No history records',
+      clear: 'Clear',
+      load: 'Load',
+      loadSuccess: 'Loaded successfully',
+      save: 'Save Request',
+      clearSuccess: 'History cleared',
+      clearConfirm: 'Are you sure you want to clear all history?',
+      clearTitle: 'Clear History',
+      deleteSuccess: 'Deleted successfully',
+      saveSuccess: 'Saved successfully',
+      updateSuccess: 'Updated successfully'
     },
     themes: {
       light: 'Light',
-      dark: 'Dark'
+      dark: 'Dark',
+      preset: 'Preset Themes',
+      custom: 'Custom',
+      mode: 'Theme Mode',
+      primary: 'Primary Color',
+      background: 'Background',
+      apply: 'Apply',
+      reset: 'Reset'
     },
     layouts: {
       horizontal: 'Horizontal',

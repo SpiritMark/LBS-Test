@@ -53,5 +53,23 @@
     "clearTitle": "Clear History",
     "clearMessage": "Are you sure you want to clear all history?",
     "clearSuccess": "History cleared successfully"
+  },
+  "settings": {
+    "title": "Settings",
+    "appearance": "Appearance",
+    "theme": "Theme",
+    "language": "Language",
+    "layout": "Layout",
+    "editor": "Editor",
+    "fontSize": "Font Size"
+  },
+  "theme": {
+    "light": "Light",
+    "dark": "Dark",
+    "system": "System"
+  },
+  "layout": {
+    "default": "Default",
+    "compact": "Compact"
   }
 } 

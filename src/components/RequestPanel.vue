@@ -94,14 +94,37 @@
 
               <div v-if="bodyType === 'json'" class="json-editor">
                 <div class="editor-wrapper">
-                  <a-textarea
-                    v-model:value="jsonBody"
-                    :auto-size="{ minRows: 10, maxRows: 20 }"
-                    :placeholder="getFormatPlaceholder(rawFormat)"
-                    class="json-input"
-                    @input="handleJsonInput"
-                  />
-                  <pre v-if="jsonBody" class="json-preview" v-html="highlightedBody"></pre>
+                  <div class="editor-container">
+                    <div class="line-numbers">
+                      <div v-for="i in getLineCount(jsonBody)" :key="i" class="line-number">{{ i }}</div>
+                    </div>
+                    <div class="editor-content">
+                      <a-textarea
+                        v-model:value="jsonBody"
+                        :auto-size="false"
+                        :placeholder="getFormatPlaceholder(rawFormat)"
+                        class="code-editor"
+                        @input="handleBodyInput"
+                        spellcheck="false"
+                      />
+                      <pre class="editor-highlight" v-html="highlightedBody"></pre>
+                    </div>
+                  </div>
+                </div>
+                <div class="editor-actions">
+                  <a-button size="small" @click="zoomOut" class="zoom-btn">
+                    <template #icon><minus-outlined /></template>
+                  </a-button>
+                  <a-button size="small" @click="resetZoom" class="zoom-btn">
+                    {{ fontSize }}px
+                  </a-button>
+                  <a-button size="small" @click="zoomIn" class="zoom-btn">
+                    <template #icon><plus-outlined /></template>
+                  </a-button>
+                  <a-button size="small" @click="formatCode">
+                    <template #icon><code-outlined /></template>
+                    {{ t('request.prettify') }}
+                  </a-button>
                 </div>
               </div>
 
@@ -122,17 +145,23 @@
         </a-tabs>
       </div>
 
-      <div class="response-content">
+      <div class="response-section">
         <a-spin :spinning="isLoading" tip="Loading...">
-          <div v-if="response" class="response-info">
+          <div v-if="response" class="response-panel">
             <div class="response-header">
-              <div class="response-status">
-                <span class="label">{{ t('request.status') }}:</span>
-                <a-tag :color="getStatusColor(response.status)">{{ response.status }}</a-tag>
-              </div>
-              <div class="response-time">
-                <span class="label">{{ t('request.time') }}:</span>
-                <span>{{ response.time }}ms</span>
+              <div class="response-info">
+                <div class="response-status">
+                  <span class="label">{{ t('request.status') }}:</span>
+                  <a-tag :color="getStatusColor(response.status)">{{ response.status }}</a-tag>
+                </div>
+                <div class="response-time">
+                  <span class="label">{{ t('request.time') }}:</span>
+                  <span>{{ response.time }}ms</span>
+                </div>
+                <div class="response-size">
+                  <span class="label">{{ t('request.size') }}:</span>
+                  <span>{{ getResponseSize }}</span>
+                </div>
               </div>
             </div>
 
@@ -140,18 +169,29 @@
               <a-tabs v-model:activeKey="responseTab">
                 <a-tab-pane key="body" :tab="t('request.response')">
                   <div class="response-body">
-                    <div class="response-actions">
-                      <a-button type="text" @click="copyResponse">
+                    <div class="editor-wrapper">
+                      <div class="editor-container">
+                        <div class="line-numbers">
+                          <div v-for="i in getLineCount(formattedResponse)" :key="i" class="line-number">{{ i }}</div>
+                        </div>
+                        <div class="editor-content">
+                          <pre class="editor-highlight response-highlight" v-html="highlightedResponse"></pre>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="editor-actions">
+                      <a-button size="small" @click="copyResponse">
                         <template #icon><copy-outlined /></template>
                         {{ t('request.copy') }}
                       </a-button>
-                      <a-button type="text" @click="prettifyResponse">
+                      <a-button size="small" @click="downloadResponse">
+                        <template #icon><download-outlined /></template>
+                        {{ t('request.download') }}
+                      </a-button>
+                      <a-button size="small" @click="formatCode">
                         <template #icon><code-outlined /></template>
                         {{ t('request.prettify') }}
                       </a-button>
-                    </div>
-                    <div class="response-content">
-                      <pre v-html="formattedResponse"></pre>
                     </div>
                   </div>
                 </a-tab-pane>
@@ -283,18 +323,27 @@
 }
 
 .json-input {
-  font-family: monospace;
-  resize: none;
-  background: transparent !important;
   position: relative;
+  font-family: monospace;
+  font-size: 14px;
+  line-height: 1.5;
+  padding: 8px;
   z-index: 1;
-  color: transparent;
-  caret-color: var(--color-text);
+  background: transparent !important;
 }
 
-.json-input::selection {
-  background: var(--color-primary-bg);
-  color: var(--color-text);
+.json-input:deep(.ant-input) {
+  font-family: monospace !important;
+  font-size: 14px !important;
+  line-height: 1.5 !important;
+  background: transparent !important;
+  color: transparent !important;
+  caret-color: var(--color-text) !important;
+}
+
+.json-input:deep(.ant-input)::selection {
+  background: var(--color-primary-bg) !important;
+  color: var(--color-text) !important;
 }
 
 .json-preview {
@@ -304,12 +353,22 @@
   right: 0;
   bottom: 0;
   margin: 0;
-  pointer-events: none;
-  padding: 4px 11px;
+  padding: 8px;
   font-family: monospace;
+  font-size: 14px;
+  line-height: 1.5;
   white-space: pre-wrap;
   word-wrap: break-word;
+  pointer-events: none;
   color: var(--color-text);
+  background: transparent;
+  z-index: 0;
+}
+
+.editor-actions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
 }
 
 :deep(.hljs) {
@@ -318,23 +377,27 @@
 }
 
 :deep(.hljs-attr) {
-  color: #e06c75;
+  color: #79b8ff;
 }
 
 :deep(.hljs-string) {
-  color: #98c379;
+  color: #9ecbff;
 }
 
 :deep(.hljs-number) {
-  color: #d19a66;
+  color: #f8c555;
 }
 
-:deep(.hljs-literal) {
-  color: #56b6c2;
+:deep(.hljs-boolean) {
+  color: #85e89d;
+}
+
+:deep(.hljs-null) {
+  color: #f97583;
 }
 
 :deep(.hljs-punctuation) {
-  color: #abb2bf;
+  color: #9da5b4;
 }
 
 .response-section {
@@ -581,30 +644,182 @@
 .url-input {
   flex: 1;
 }
+
+.json-editor {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  height: 100%;
+}
+
+.editor-wrapper {
+  flex: 1;
+  position: relative;
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  background: var(--color-bg-elevated);
+  overflow: hidden;
+}
+
+.editor-container {
+  display: flex;
+  height: 300px;
+  overflow: auto;
+}
+
+.line-numbers {
+  padding: 8px 8px 8px 0;
+  background: var(--color-bg-elevated);
+  border-right: 1px solid var(--color-border);
+  user-select: none;
+  text-align: right;
+  color: var(--color-text-quaternary);
+}
+
+.line-number {
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', monospace;
+  font-size: v-bind(fontSize + 'px');
+  line-height: v-bind(lineHeight + 'px');
+  padding: 0 8px;
+  min-width: 40px;
+}
+
+.code-editor {
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', monospace !important;
+  font-size: v-bind(fontSize + 'px') !important;
+  line-height: v-bind(lineHeight + 'px') !important;
+  padding: 8px !important;
+  resize: none;
+  border: none;
+  background: transparent;
+  height: 100% !important;
+  color: var(--color-text);
+}
+
+.code-editor:deep(.ant-input) {
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', monospace !important;
+  font-size: v-bind(fontSize + 'px') !important;
+  line-height: v-bind(lineHeight + 'px') !important;
+  padding: 0 !important;
+  resize: none;
+  border: none;
+  background: transparent;
+  height: 100% !important;
+}
+
+.code-editor:deep(.ant-input):focus {
+  box-shadow: none;
+}
+
+.editor-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 4px;
+}
+
+.zoom-btn {
+  min-width: 32px;
+}
+
+.zoom-btn:deep(.anticon) {
+  font-size: 12px;
+}
+
+.editor-content {
+  position: relative;
+  flex: 1;
+}
+
+.editor-highlight {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  margin: 0;
+  padding: 8px;
+  pointer-events: none;
+  white-space: pre-wrap;
+  word-break: break-all;
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', monospace;
+  font-size: v-bind(fontSize + 'px');
+  line-height: v-bind(lineHeight + 'px');
+  background: transparent;
+}
+
+.response-highlight {
+  background: transparent;
+}
+
+.response-header {
+  padding: 16px;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.response-info {
+  display: flex;
+  gap: 24px;
+  align-items: center;
+}
+
+.response-status,
+.response-time,
+.response-size {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.label {
+  color: var(--color-text-secondary);
+}
+
+:deep(.hljs-attr) {
+  color: #79b8ff;
+}
+
+:deep(.hljs-string) {
+  color: #9ecbff;
+}
+
+:deep(.hljs-number) {
+  color: #f8c555;
+}
+
+:deep(.hljs-boolean) {
+  color: #85e89d;
+}
+
+:deep(.hljs-null) {
+  color: #f97583;
+}
+
+:deep(.hljs-punctuation) {
+  color: #9da5b4;
+}
 </style>
 
 <script lang="ts" setup>
-import { ref, computed, onMounted, h } from 'vue'
+import { ref, computed, h } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { message } from 'ant-design-vue'
 import axios, { CancelTokenSource } from 'axios'
-import { DeleteOutlined, CopyOutlined, CodeOutlined, LoadingOutlined } from '@ant-design/icons-vue'
+import { DeleteOutlined, CopyOutlined, CodeOutlined, LoadingOutlined, PlusOutlined, MinusOutlined, DownloadOutlined } from '@ant-design/icons-vue'
 import { downloadData } from '../utils/download'
 import { parseCurl } from '../utils/curlParser'
 import { HistoryManager } from '../utils/historyManager'
 import hljs from 'highlight.js/lib/core'
 import json from 'highlight.js/lib/languages/json'
-import javascript from 'highlight.js/lib/languages/javascript'
-import xml from 'highlight.js/lib/languages/xml'
 import 'highlight.js/styles/atom-one-dark.css'
-import type { RequestMethod, RequestBodyType, RawFormat, ResponseData } from '../types/request'
+import type { RequestMethod, ResponseData } from '../types/request'
+
+// 初始化代码高亮
+hljs.registerLanguage('json', json)
 
 const { t } = useI18n()
 
 // 初始化
-hljs.registerLanguage('json', json)
-hljs.registerLanguage('javascript', javascript)
-hljs.registerLanguage('xml', xml)
 const historyManager = new HistoryManager()
 
 // 响应式数据
@@ -614,7 +829,7 @@ const activeTab = ref('params')
 const responseTab = ref('body')
 const response = ref<ResponseData | null>(null)
 const bodyType = ref<'none' | 'json' | 'form-data'>('none')
-const rawFormat = ref<'text' | 'javascript' | 'json' | 'html' | 'xml'>('json')
+const rawFormat = ref<'json'>('json')
 const params = ref<{ key: string; value: string }[]>([])
 const headers = ref<{ key: string; value: string }[]>([])
 const formData = ref<{ key: string; value: string }[]>([])
@@ -623,11 +838,55 @@ const isParsingCurl = ref(false)
 const isLoading = ref(false)
 let currentRequest: CancelTokenSource | null = null
 
-// 格式化并高亮 JSON
-const formatAndHighlight = (data: any) => {
+// 定义 loading 图标
+const loadingIcon = h(LoadingOutlined, {
+  style: {
+    fontSize: '16px',
+  },
+})
+
+// 计算属性 - JSON 数据
+const jsonData = computed({
+  get: () => {
+    try {
+      return jsonBody.value ? JSON.parse(jsonBody.value) : {}
+    } catch {
+      return {}
+    }
+  },
+  set: (value) => {
+    try {
+      jsonBody.value = JSON.stringify(value, null, 2)
+    } catch {
+      console.warn('Invalid JSON data')
+    }
+  }
+})
+
+// 处理 JSON 变化
+const handleJsonChange = (value: any) => {
   try {
-    const formatted = JSON.stringify(data, null, 2)
-    return hljs.highlight(formatted, { language: 'json' }).value
+    jsonBody.value = JSON.stringify(value, null, 2)
+  } catch (error) {
+    console.warn('Invalid JSON format')
+  }
+}
+
+// 格式化 JSON
+const formatJson = () => {
+  try {
+    const parsed = jsonBody.value ? JSON.parse(jsonBody.value) : {}
+    jsonBody.value = JSON.stringify(parsed, null, 2)
+    message.success(t('request.prettifySuccess'))
+  } catch {
+    message.error(t('request.prettifyError'))
+  }
+}
+
+// 格式化 JSON 字符串
+const formatJsonString = (data: any): string => {
+  try {
+    return JSON.stringify(data, null, 2)
   } catch {
     return String(data)
   }
@@ -636,7 +895,7 @@ const formatAndHighlight = (data: any) => {
 // 计算属性 - 格式化的响应内容
 const formattedResponse = computed(() => {
   if (!response.value?.data) return ''
-  return formatAndHighlight(response.value.data)
+  return formatJsonString(response.value.data)
 })
 
 // 计算属性 - 格式化的请求体
@@ -644,7 +903,7 @@ const formattedJsonBody = computed(() => {
   if (!jsonBody.value) return ''
   try {
     const parsed = JSON.parse(jsonBody.value)
-    return formatAndHighlight(parsed)
+    return formatJsonString(parsed)
   } catch {
     return jsonBody.value
   }
@@ -724,7 +983,7 @@ const buildUrl = () => {
     
     return urlObj.toString()
   } catch (error) {
-    // 如果 URL 解析失败，返回原始 URL
+    // 如果 URL 解析失，返回原始 URL
     return url.value
   }
 }
@@ -926,13 +1185,6 @@ const handleUrlPaste = async (e: ClipboardEvent) => {
   }
 }
 
-// 定义 loading 图标
-const loadingIcon = h(LoadingOutlined, {
-  style: {
-    fontSize: '16px',
-  },
-})
-
 const getFormatPlaceholder = (format: string) => {
   switch (format) {
     case 'json':
@@ -948,26 +1200,15 @@ const getFormatPlaceholder = (format: string) => {
   }
 }
 
-const highlightedBody = computed(() => {
-  if (!jsonBody.value) return ''
-  try {
-    if (rawFormat.value === 'json') {
-      const parsed = JSON.parse(jsonBody.value)
-      return hljs.highlight(JSON.stringify(parsed, null, 2), { language: 'json' }).value
-    } else {
-      return hljs.highlight(jsonBody.value, { language: rawFormat.value }).value
-    }
-  } catch {
-    return hljs.highlight(jsonBody.value, { language: rawFormat.value }).value
-  }
-})
-
 const handleJsonInput = () => {
   if (rawFormat.value === 'json') {
     try {
-      JSON.parse(jsonBody.value)
+      const formatted = JSON.stringify(JSON.parse(jsonBody.value), null, 2)
+      if (formatted !== jsonBody.value) {
+        jsonBody.value = formatted
+      }
     } catch {
-      // JSON 解析错误，不做处理
+      // JSON 解析错误，保持原样
     }
   }
 }
@@ -979,4 +1220,134 @@ const cancelRequest = () => {
     isLoading.value = false
   }
 }
+
+// 加载请求
+const loadRequest = (request: any) => {
+  method.value = request.method
+  url.value = request.url
+  headers.value = request.headers || []
+  params.value = request.params || []
+  bodyType.value = request.bodyType || 'none'
+  
+  if (request.bodyType === 'json' && request.jsonBody) {
+    jsonBody.value = request.jsonBody
+  } else if (request.bodyType === 'form-data' && request.formData) {
+    formData.value = request.formData
+  }
+}
+
+// 字体大小控制
+const fontSize = ref(14)
+const lineHeight = computed(() => Math.floor(fontSize.value * 1.5))
+
+// 计算行数
+const lineCount = computed(() => {
+  return jsonBody.value.split('\n').length
+})
+
+// 缩放控制
+const zoomIn = () => {
+  if (fontSize.value < 24) {
+    fontSize.value += 2
+  }
+}
+
+const zoomOut = () => {
+  if (fontSize.value > 12) {
+    fontSize.value -= 2
+  }
+}
+
+const resetZoom = () => {
+  fontSize.value = 14
+}
+
+// 处理输入
+const handleBodyInput = () => {
+  if (rawFormat.value === 'json') {
+    try {
+      const formatted = JSON.stringify(JSON.parse(jsonBody.value), null, 2)
+      if (formatted !== jsonBody.value) {
+        jsonBody.value = formatted
+      }
+    } catch {
+      // JSON 解析错误时保持原样
+    }
+  }
+}
+
+// 获取行数
+const getLineCount = (text: string) => {
+  return text.split('\n').length
+}
+
+// 高亮代码
+const highlightCode = (code: string, language = 'json') => {
+  try {
+    if (language === 'json') {
+      const parsed = JSON.parse(code)
+      return hljs.highlight(JSON.stringify(parsed, null, 2), { language }).value
+    }
+    return hljs.highlight(code, { language }).value
+  } catch {
+    return code
+  }
+}
+
+// 请求体高亮
+const highlightedBody = computed(() => {
+  return highlightCode(jsonBody.value)
+})
+
+// 响应高亮
+const highlightedResponse = computed(() => {
+  return highlightCode(formattedResponse.value)
+})
+
+// 获取响应大小
+const getResponseSize = computed(() => {
+  if (!response.value?.data) return '0 B'
+  const bytes = new TextEncoder().encode(JSON.stringify(response.value.data)).length
+  const units = ['B', 'KB', 'MB', 'GB']
+  let size = bytes
+  let unitIndex = 0
+  while (size >= 1024 && unitIndex < units.length - 1) {
+    size /= 1024
+    unitIndex++
+  }
+  return `${size.toFixed(2)} ${units[unitIndex]}`
+})
+
+// 格式化代码
+const formatCode = () => {
+  if (rawFormat.value === 'json') {
+    try {
+      const value = jsonBody.value || '{}'
+      const parsed = JSON.parse(value)
+      jsonBody.value = JSON.stringify(parsed, null, 2)
+      message.success(t('request.prettifySuccess'))
+    } catch {
+      message.error(t('request.prettifyError'))
+    }
+  }
+}
+
+// 下载响应
+const downloadResponse = () => {
+  if (!response.value?.data) return
+  const data = JSON.stringify(response.value.data, null, 2)
+  const blob = new Blob([data], { type: 'application/json' })
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = `response_${Date.now()}.json`
+  document.body.appendChild(a)
+  a.click()
+  document.body.removeChild(a)
+  URL.revokeObjectURL(url)
+}
+
+defineExpose({
+  loadRequest
+})
 </script> 
