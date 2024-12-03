@@ -10,6 +10,7 @@ const messages = {
     },
     request: {
       send: '发送',
+      cancel: '取消',
       sendAndDownload: '发送并下载',
       method: '方法',
       url: '输入 URL 或粘贴 cURL 命令',
@@ -24,18 +25,27 @@ const messages = {
       action: '操作',
       addParam: '添加参数',
       addHeader: '添加请求头',
+      addFormData: '添加表单数据',
       status: '状态',
       time: '耗时',
       prettify: '格式化',
       copy: '复制',
       copySuccess: '复制成功',
       downloadSuccess: '下载成功',
-      downloadError: '下载失败',
+      downloadFailed: '下载失败',
       selectFileType: '选择文件类型',
       json: 'JSON',
       text: '文本',
       binary: '二进制',
-      sendTip: '发送请求'
+      sendTip: '发送请求',
+      urlRequired: '请输入 URL',
+      invalidJson: 'JSON 格式错误',
+      failed: '请求失败',
+      cancelled: '请求已取消'
+    },
+    response: {
+      empty: '暂无响应数据',
+      loading: '请求中...'
     },
     history: {
       title: '历史记录',
@@ -80,6 +90,7 @@ const messages = {
     },
     request: {
       send: 'Send',
+      cancel: 'Cancel',
       sendAndDownload: 'Send & Download',
       method: 'Method',
       url: 'Enter URL or paste cURL command',
@@ -94,18 +105,27 @@ const messages = {
       action: 'Action',
       addParam: 'Add Parameter',
       addHeader: 'Add Header',
+      addFormData: 'Add Form Data',
       status: 'Status',
       time: 'Time',
       prettify: 'Prettify',
       copy: 'Copy',
       copySuccess: 'Copied',
       downloadSuccess: 'Download success',
-      downloadError: 'Download failed',
+      downloadFailed: 'Download failed',
       selectFileType: 'Select File Type',
       json: 'JSON',
       text: 'Text',
       binary: 'Binary',
-      sendTip: 'Send Request'
+      sendTip: 'Send Request',
+      urlRequired: 'Please enter URL',
+      invalidJson: 'Invalid JSON format',
+      failed: 'Request failed',
+      cancelled: 'Request cancelled'
+    },
+    response: {
+      empty: 'No response data',
+      loading: 'Requesting...'
     },
     history: {
       title: 'History',
