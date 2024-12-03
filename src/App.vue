@@ -151,12 +151,12 @@ import {
   MenuFoldOutlined,
   MenuUnfoldOutlined
 } from '@ant-design/icons-vue'
-import RequestPanel from './components/RequestPanel.vue'
-import CollectionPanel from './components/CollectionPanel.vue'
-import HistoryPanel from './components/HistoryPanel.vue'
-import SettingsPanel from './components/SettingsPanel.vue'
-import { storageManager } from './utils/storage'
-import type { UserSettings } from './utils/storage'
+import RequestPanel from '@/components/RequestPanel.vue'
+import CollectionPanel from '@/components/CollectionPanel.vue'
+import HistoryPanel from '@/components/HistoryPanel.vue'
+import SettingsPanel from '@/components/SettingsPanel.vue'
+import { storageManager } from '@/utils/storage'
+import type { UserSettings } from '@/utils/storage'
 
 const { t } = useI18n()
 const activeView = ref('request')

@@ -81,8 +81,8 @@
 import { ref, computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { MinusOutlined, PlusOutlined } from '@ant-design/icons-vue'
-import { storageManager } from '../utils/storage'
-import type { UserSettings } from '../utils/storage'
+import { storageManager } from '@/utils/storage'
+import type { UserSettings } from '@/utils/storage'
 
 const { t, locale } = useI18n()
 
