@@ -71,5 +71,21 @@
   "layout": {
     "default": "默认",
     "compact": "紧凑"
+  },
+  "nav": {
+    "request": "接口测试",
+    "collection": "接口集合",
+    "history": "历史记录",
+    "settings": "设置"
+  },
+  "app": {
+    "title": "API 测试工具",
+    "logo": "接口测试工具",
+    "theme": "主题",
+    "customTheme": "自定义主题",
+    "primary": "主色调",
+    "background": "背景色",
+    "language": "语言",
+    "layout": "布局"
   }
 } 

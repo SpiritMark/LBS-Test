@@ -1,354 +1,427 @@
 <template>
-  <div class="color-picker">
-    <div class="color-panel">
-      <canvas ref="canvas" class="color-canvas" @mousedown="startPicking" />
-      <div class="color-pointer" :style="pointerStyle" />
-    </div>
-    <div class="hue-slider">
-      <div class="hue-track" ref="hueTrack" @mousedown="startPickingHue">
-        <div class="hue-thumb" :style="{ left: `${hue / 360 * 100}%` }" />
-      </div>
-    </div>
-    <div class="color-inputs">
-      <div class="hex-input">
-        <span class="input-label">#</span>
-        <input
-          v-model="hexValue"
-          type="text"
-          maxlength="6"
-          @input="updateFromHex"
-          @blur="formatHex"
+  <div class="theme-picker-container">
+    <div class="theme-picker-panel glass-effect">
+      <!-- 预设主题网格 -->
+      <div class="theme-grid">
+        <div
+          v-for="theme in presetThemes"
+          :key="theme.key"
+          class="theme-block glass-effect"
+          :class="{ active: currentTheme === theme.key }"
+          @click="selectTheme(theme)"
         >
+          <div class="theme-preview" :style="getThemePreviewStyle(theme)">
+            <div class="theme-preview-content">
+              <div class="preview-header" :style="{ backgroundColor: theme.colorPrimary }"></div>
+              <div class="preview-body" :style="{ backgroundColor: theme.colorBg }">
+                <div class="preview-line"></div>
+                <div class="preview-line"></div>
+              </div>
+            </div>
+          </div>
+          <div class="theme-name">{{ theme.name }}</div>
+          <check-outlined v-if="currentTheme === theme.key" class="check-icon" />
+        </div>
       </div>
-      <div class="rgb-inputs">
-        <input
-          v-for="(value, index) in rgbValues"
-          :key="index"
-          type="number"
-          min="0"
-          max="255"
-          v-model.number="rgbValues[index]"
-          @input="updateFromRgb"
-        >
+
+      <!-- 自定义主题 -->
+      <div class="custom-theme-section">
+        <div class="section-title">自定义主题</div>
+        <div class="color-preview" :style="previewStyle">
+          <div class="color-value">{{ modelValue }}</div>
+          <div class="color-preview-overlay"></div>
+        </div>
+        <div class="custom-color-input glass-effect">
+          <input
+            type="color"
+            :value="modelValue"
+            @input="updateColor"
+            class="color-input"
+          />
+          <span class="custom-color-text">选择颜色</span>
+        </div>
+        <div class="theme-options">
+          <a-switch
+            v-model:checked="isDark"
+            checked-children="暗色"
+            un-checked-children="亮色"
+            class="theme-switch"
+          />
+        </div>
+        <div class="actions">
+          <a-button type="primary" @click="applyTheme" :loading="loading" class="action-button">
+            应用主题
+          </a-button>
+          <a-button @click="resetTheme" class="action-button">重置</a-button>
+        </div>
       </div>
     </div>
   </div>
 </template>
 
-<script lang="ts" setup>
-import { ref, onMounted, computed, watch } from 'vue'
+<script setup lang="ts">
+import { ref, computed } from 'vue'
+import { message } from 'ant-design-vue'
+import { CheckOutlined } from '@ant-design/icons-vue'
+import { useAppStore } from '../store/app'
+import { hexToRgba, themes } from '../styles/themes'
 
 const props = defineProps<{
-  value: string
+  modelValue: string
 }>()
 
 const emit = defineEmits<{
+  (e: 'update:modelValue', value: string): void
   (e: 'change', value: string): void
 }>()
 
-const canvas = ref<HTMLCanvasElement | null>(null)
-const hueTrack = ref<HTMLDivElement | null>(null)
-const ctx = ref<CanvasRenderingContext2D | null>(null)
+const loading = ref(false)
+const isDark = ref(false)
+const appStore = useAppStore()
+const currentTheme = ref('default')
 
-const hue = ref(0)
-const saturation = ref(100)
-const value = ref(100)
-const rgbValues = ref([255, 0, 0])
-const hexValue = ref('FF0000')
-
-const pointerStyle = computed(() => ({
-  left: `${saturation.value}%`,
-  top: `${100 - value.value}%`
+// 预设主题列表
+const presetThemes = themes.map(theme => ({
+  key: theme.key,
+  name: theme.name,
+  colorPrimary: theme.style.colorPrimary,
+  colorBg: theme.style.colorBgContainer,
+  colorBgLayout: theme.style.colorBgLayout,
+  isDark: theme.style.colorBgContainer === '#1f1f1f'
 }))
 
-// 初始化颜色面板
-const initColorPanel = () => {
-  if (!canvas.value || !ctx.value) return
-  
-  const width = canvas.value.width
-  const height = canvas.value.height
-  
-  // 绘制颜色面板
-  for (let x = 0; x < width; x++) {
-    for (let y = 0; y < height; y++) {
-      const s = x / width * 100
-      const v = (height - y) / height * 100
-      const color = hsvToRgb(hue.value, s, v)
-      ctx.value.fillStyle = `rgb(${color.join(',')})`
-      ctx.value.fillRect(x, y, 1, 1)
-    }
-  }
-}
+const previewStyle = computed(() => ({
+  backgroundColor: props.modelValue,
+  boxShadow: `0 8px 24px ${hexToRgba(props.modelValue, isDark.value ? 0.3 : 0.2)}`,
+  border: `1px solid ${hexToRgba(props.modelValue, isDark.value ? 0.2 : 0.1)}`
+}))
 
-// HSV 转 RGB
-const hsvToRgb = (h: number, s: number, v: number): number[] => {
-  s = s / 100
-  v = v / 100
-  const i = Math.floor(h / 60)
-  const f = h / 60 - i
-  const p = v * (1 - s)
-  const q = v * (1 - f * s)
-  const t = v * (1 - (1 - f) * s)
-  
-  let r = 0, g = 0, b = 0
-  switch (i % 6) {
-    case 0: r = v; g = t; b = p; break
-    case 1: r = q; g = v; b = p; break
-    case 2: r = p; g = v; b = t; break
-    case 3: r = p; g = q; b = v; break
-    case 4: r = t; g = p; b = v; break
-    case 5: r = v; g = p; b = q; break
-  }
-  
-  return [
-    Math.round(r * 255),
-    Math.round(g * 255),
-    Math.round(b * 255)
-  ]
-}
-
-// RGB 转 HSV
-const rgbToHsv = (r: number, g: number, b: number): number[] => {
-  r = r / 255
-  g = g / 255
-  b = b / 255
-  
-  const max = Math.max(r, g, b)
-  const min = Math.min(r, g, b)
-  const d = max - min
-  let h = 0
-  
-  if (d === 0) h = 0
-  else if (max === r) h = 60 * ((g - b) / d % 6)
-  else if (max === g) h = 60 * ((b - r) / d + 2)
-  else if (max === b) h = 60 * ((r - g) / d + 4)
-  
-  if (h < 0) h += 360
-  
-  const s = max === 0 ? 0 : d / max * 100
-  const v = max * 100
-  
-  return [h, s, v]
-}
-
-// 更新颜色
-const updateColor = () => {
-  const rgb = hsvToRgb(hue.value, saturation.value, value.value)
-  rgbValues.value = rgb
-  hexValue.value = rgb.map(x => x.toString(16).padStart(2, '0')).join('').toUpperCase()
-  emit('change', `#${hexValue.value}`)
-  initColorPanel()
-}
-
-// 开始拾取颜色
-const startPicking = (e: MouseEvent) => {
-  const pick = (e: MouseEvent) => {
-    if (!canvas.value) return
-    const rect = canvas.value.getBoundingClientRect()
-    const x = Math.max(0, Math.min(e.clientX - rect.left, rect.width))
-    const y = Math.max(0, Math.min(e.clientY - rect.top, rect.height))
-    
-    saturation.value = x / rect.width * 100
-    value.value = (rect.height - y) / rect.height * 100
-    updateColor()
-  }
-  
-  pick(e)
-  
-  const stopPicking = () => {
-    document.removeEventListener('mousemove', pick)
-    document.removeEventListener('mouseup', stopPicking)
-  }
-  
-  document.addEventListener('mousemove', pick)
-  document.addEventListener('mouseup', stopPicking)
-}
-
-// 开始拾取色相
-const startPickingHue = (e: MouseEvent) => {
-  const pickHue = (e: MouseEvent) => {
-    if (!hueTrack.value) return
-    const rect = hueTrack.value.getBoundingClientRect()
-    const x = Math.max(0, Math.min(e.clientX - rect.left, rect.width))
-    
-    hue.value = x / rect.width * 360
-    updateColor()
-  }
-  
-  pickHue(e)
-  
-  const stopPickingHue = () => {
-    document.removeEventListener('mousemove', pickHue)
-    document.removeEventListener('mouseup', stopPickingHue)
-  }
-  
-  document.addEventListener('mousemove', pickHue)
-  document.addEventListener('mouseup', stopPickingHue)
-}
-
-// 从十六进制更新
-const updateFromHex = () => {
-  if (hexValue.value.length !== 6) return
-  const r = parseInt(hexValue.value.slice(0, 2), 16)
-  const g = parseInt(hexValue.value.slice(2, 4), 16)
-  const b = parseInt(hexValue.value.slice(4, 6), 16)
-  if (isNaN(r) || isNaN(g) || isNaN(b)) return
-  
-  rgbValues.value = [r, g, b]
-  const hsv = rgbToHsv(r, g, b)
-  hue.value = hsv[0]
-  saturation.value = hsv[1]
-  value.value = hsv[2]
-  updateColor()
-}
-
-// 从 RGB 更新
-const updateFromRgb = () => {
-  const hsv = rgbToHsv(...rgbValues.value)
-  hue.value = hsv[0]
-  saturation.value = hsv[1]
-  value.value = hsv[2]
-  updateColor()
-}
-
-// 格式化十六进制值
-const formatHex = () => {
-  hexValue.value = hexValue.value.padEnd(6, '0').toUpperCase()
-}
-
-// 监听外部值变化
-watch(() => props.value, (newValue) => {
-  if (newValue.startsWith('#')) {
-    hexValue.value = newValue.slice(1).toUpperCase()
-    updateFromHex()
-  }
-}, { immediate: true })
-
-onMounted(() => {
-  if (canvas.value) {
-    canvas.value.width = 200
-    canvas.value.height = 200
-    ctx.value = canvas.value.getContext('2d')
-    initColorPanel()
-  }
+const getThemePreviewStyle = (theme: typeof presetThemes[0]) => ({
+  backgroundColor: theme.colorBg,
+  boxShadow: `0 8px 24px ${hexToRgba(theme.colorPrimary, theme.isDark ? 0.3 : 0.2)}`,
+  border: `1px solid ${hexToRgba(theme.colorPrimary, theme.isDark ? 0.2 : 0.1)}`
 })
+
+const selectTheme = (theme: typeof presetThemes[0]) => {
+  currentTheme.value = theme.key
+  appStore.setTheme(theme.key)
+  message.success({
+    content: '主题应用成功',
+    duration: 1,
+    style: { marginTop: '20vh' }
+  })
+}
+
+const selectColor = (color: string) => {
+  const normalizedColor = color.toLowerCase()
+  emit('update:modelValue', normalizedColor)
+  emit('change', normalizedColor)
+}
+
+const updateColor = (e: Event) => {
+  const input = e.target as HTMLInputElement
+  const color = input.value.toLowerCase()
+  emit('update:modelValue', color)
+  emit('change', color)
+}
+
+const applyTheme = async () => {
+  if (!props.modelValue) {
+    message.warning({
+      content: '请选择一个颜色',
+      duration: 1,
+      style: { marginTop: '20vh' }
+    })
+    return
+  }
+
+  loading.value = true
+  try {
+    await appStore.setCustomTheme(props.modelValue, isDark.value)
+    currentTheme.value = 'custom'
+    message.success({
+      content: '主题应用成功',
+      duration: 1,
+      style: { marginTop: '20vh' }
+    })
+  } catch (error) {
+    console.error('Theme application error:', error)
+    message.error({
+      content: '主题应用失败',
+      duration: 1,
+      style: { marginTop: '20vh' }
+    })
+  } finally {
+    loading.value = false
+  }
+}
+
+const resetTheme = () => {
+  selectColor('#1890ff')
+  isDark.value = false
+  currentTheme.value = 'default'
+  appStore.resetTheme()
+  message.success({
+    content: '主题已重置',
+    duration: 1,
+    style: { marginTop: '20vh' }
+  })
+}
 </script>
 
 <style scoped>
-.color-picker {
-  padding: 12px;
-  background: var(--color-bg-container);
-  border-radius: var(--border-radius);
-  width: 240px;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.color-panel {
+.theme-picker-container {
   position: relative;
-  width: 200px;
-  height: 200px;
-  border-radius: 4px;
-  overflow: hidden;
+  padding: 16px;
+  perspective: 1000px;
 }
 
-.color-canvas {
+.theme-picker-panel {
+  background: var(--color-bg-glass);
+  border-radius: 16px;
+  padding: 24px;
+  width: 100%;
+  max-width: 800px;
+  transform-style: preserve-3d;
+  transform: translateZ(0);
+  transition: all 0.3s var(--motion-ease-in-out);
+}
+
+.glass-effect {
+  backdrop-filter: var(--backdrop-filter);
+  -webkit-backdrop-filter: var(--backdrop-filter);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: var(--box-shadow-secondary);
+}
+
+.theme-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 20px;
+  margin-bottom: 32px;
+  perspective: 1000px;
+}
+
+.theme-block {
+  position: relative;
+  border-radius: 12px;
+  padding: 12px;
+  cursor: pointer;
+  transition: all 0.3s var(--motion-ease-in-out);
+  transform-style: preserve-3d;
+}
+
+.theme-block:hover {
+  transform: translateY(-4px) translateZ(20px);
+}
+
+.theme-block.active {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 2px var(--color-primary);
+}
+
+.theme-preview {
+  width: 100%;
+  height: 120px;
+  border-radius: 8px;
+  overflow: hidden;
+  position: relative;
+  margin-bottom: 8px;
+  transition: all 0.3s var(--motion-ease-in-out);
+}
+
+.theme-preview-content {
   width: 100%;
   height: 100%;
-  cursor: crosshair;
+  position: relative;
 }
 
-.color-pointer {
+.preview-header {
+  height: 30%;
+  width: 100%;
+}
+
+.preview-body {
+  height: 70%;
+  width: 100%;
+  padding: 8px;
+}
+
+.preview-line {
+  height: 8px;
+  width: 80%;
+  background: rgba(0, 0, 0, 0.1);
+  margin-bottom: 8px;
+  border-radius: 4px;
+}
+
+.theme-name {
+  font-size: 14px;
+  color: var(--color-text);
+  text-align: center;
+  margin-top: 8px;
+}
+
+.check-icon {
   position: absolute;
-  width: 12px;
-  height: 12px;
-  border: 2px solid white;
-  border-radius: 50%;
-  transform: translate(-50%, -50%);
-  box-shadow: 0 0 2px rgba(0, 0, 0, 0.5);
+  top: 8px;
+  right: 8px;
+  color: var(--color-primary);
+  font-size: 16px;
+  opacity: 0;
+  transform: scale(0);
+  transition: all 0.3s var(--motion-ease-in-out);
+}
+
+.theme-block.active .check-icon {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.custom-theme-section {
+  border-top: 1px solid var(--color-border);
+  padding-top: 24px;
+  margin-top: 24px;
+}
+
+.section-title {
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--color-text);
+  margin-bottom: 16px;
+}
+
+.color-preview {
+  height: 60px;
+  border-radius: 12px;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s var(--motion-ease-in-out);
+  transform: translateZ(20px);
+}
+
+.color-preview-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0) 100%);
   pointer-events: none;
 }
 
-.hue-slider {
-  padding: 8px 0;
+.color-value {
+  color: #fff;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+  font-family: monospace;
+  font-size: 16px;
+  z-index: 2;
+  transform: translateZ(10px);
 }
 
-.hue-track {
-  position: relative;
-  height: 12px;
-  background: linear-gradient(
-    to right,
-    #f00 0%,
-    #ff0 17%,
-    #0f0 33%,
-    #0ff 50%,
-    #00f 67%,
-    #f0f 83%,
-    #f00 100%
-  );
-  border-radius: 6px;
-  cursor: pointer;
-}
-
-.hue-thumb {
-  position: absolute;
-  width: 12px;
-  height: 12px;
-  background: white;
-  border-radius: 50%;
-  transform: translateX(-50%);
-  box-shadow: 0 0 2px rgba(0, 0, 0, 0.5);
-}
-
-.color-inputs {
-  display: flex;
-  gap: 8px;
-}
-
-.hex-input {
-  flex: 1;
+.custom-color-input {
   display: flex;
   align-items: center;
-  background: var(--color-bg-container);
-  border: 1px solid var(--color-border);
-  border-radius: 4px;
-  padding: 0 8px;
+  gap: 8px;
+  padding: 12px;
+  border-radius: 8px;
+  margin-bottom: 16px;
+  transition: all 0.3s var(--motion-ease-in-out);
 }
 
-.input-label {
-  color: var(--color-text-secondary);
-  font-size: 12px;
-}
-
-.hex-input input {
-  flex: 1;
-  border: none;
-  outline: none;
-  background: transparent;
-  color: var(--color-text);
-  font-family: monospace;
-  padding: 4px;
-  width: 0;
-}
-
-.rgb-inputs {
-  display: flex;
-  gap: 4px;
-}
-
-.rgb-inputs input {
+.color-input {
   width: 40px;
-  padding: 4px;
-  border: 1px solid var(--color-border);
-  border-radius: 4px;
-  outline: none;
-  text-align: center;
-  color: var(--color-text);
-  background: var(--color-bg-container);
+  height: 40px;
+  padding: 0;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  background: none;
+  transition: all 0.3s var(--motion-ease-in-out);
+  transform: translateZ(5px);
 }
 
-.rgb-inputs input::-webkit-inner-spin-button {
-  display: none;
+.color-input::-webkit-color-swatch-wrapper {
+  padding: 0;
+}
+
+.color-input::-webkit-color-swatch {
+  border: none;
+  border-radius: 8px;
+}
+
+.custom-color-text {
+  color: var(--color-text);
+  font-size: 14px;
+}
+
+.theme-options {
+  margin-bottom: 16px;
+  display: flex;
+  justify-content: center;
+}
+
+.theme-switch {
+  transition: all 0.3s var(--motion-ease-in-out);
+}
+
+.actions {
+  display: flex;
+  gap: 12px;
+}
+
+.action-button {
+  flex: 1;
+  height: 40px;
+  transition: all 0.3s var(--motion-ease-in-out);
+  transform: translateZ(5px);
+}
+
+.action-button:hover {
+  transform: translateY(-2px) translateZ(10px);
+  box-shadow: var(--box-shadow-secondary);
+}
+
+.action-button:active {
+  transform: translateY(1px) translateZ(5px);
+}
+
+/* 暗色主题适配 */
+:deep([data-theme='dark']) .theme-picker-panel {
+  background: var(--color-bg-glass);
+}
+
+:deep([data-theme='dark']) .glass-effect {
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+:deep([data-theme='dark']) .preview-line {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+/* 动画效果 */
+@keyframes float {
+  0% {
+    transform: translateZ(0);
+  }
+  50% {
+    transform: translateZ(20px);
+  }
+  100% {
+    transform: translateZ(0);
+  }
+}
+
+.theme-picker-panel {
+  animation: float 6s ease-in-out infinite;
+}
+
+.theme-block {
+  animation: float 4s ease-in-out infinite;
+  animation-delay: calc(var(--index, 0) * 0.2s);
 }
 </style> 

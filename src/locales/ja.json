@@ -1,0 +1,43 @@
+{
+  "app": {
+    "title": "API テストツール",
+    "logo": "API テスター",
+    "theme": "テーマ",
+    "customTheme": "カスタムテーマ",
+    "primary": "メインカラー",
+    "background": "背景色",
+    "language": "言語",
+    "layout": "レイアウト"
+  },
+  "nav": {
+    "request": "API テスト",
+    "collection": "コレクション",
+    "history": "履歴",
+    "settings": "設定"
+  },
+  "request": {
+    "send": "送信",
+    "sendAndDownload": "送信とダウンロード",
+    "url": "リクエストURLを入力",
+    "error": "リクエスト失敗",
+    "save": "保存",
+    "params": "パラメータ",
+    "headers": "ヘッダー",
+    "body": "ボディ",
+    "response": "レスポンス",
+    "status": "ステータス",
+    "time": "時間",
+    "copy": "コピー",
+    "copySuccess": "コピー成功",
+    "copyError": "コピー失敗",
+    "prettify": "整形",
+    "prettifySuccess": "整形成功",
+    "prettifyError": "整形失敗",
+    "invalidJson": "無効なJSON形式",
+    "key": "キー",
+    "value": "値",
+    "addParam": "パラメータを追加",
+    "addHeader": "ヘッダーを追加",
+    "addFormData": "フォームデータを追加"
+  }
+} 

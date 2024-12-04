@@ -71,5 +71,21 @@
   "layout": {
     "default": "Default",
     "compact": "Compact"
+  },
+  "nav": {
+    "request": "API Test",
+    "collection": "Collections",
+    "history": "History",
+    "settings": "Settings"
+  },
+  "app": {
+    "title": "API Testing Tool",
+    "logo": "API Tester",
+    "theme": "Theme",
+    "customTheme": "Custom Theme",
+    "primary": "Primary Color",
+    "background": "Background Color",
+    "language": "Language",
+    "layout": "Layout"
   }
 } 

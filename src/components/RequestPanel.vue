@@ -93,39 +93,10 @@
               </div>
 
               <div v-if="bodyType === 'json'" class="json-editor">
-                <div class="editor-wrapper">
-                  <div class="editor-container">
-                    <div class="line-numbers">
-                      <div v-for="i in getLineCount(jsonBody)" :key="i" class="line-number">{{ i }}</div>
-                    </div>
-                    <div class="editor-content">
-                      <a-textarea
-                        v-model:value="jsonBody"
-                        :auto-size="false"
-                        :placeholder="getFormatPlaceholder(rawFormat)"
-                        class="code-editor"
-                        @input="handleBodyInput"
-                        spellcheck="false"
-                      />
-                      <pre class="editor-highlight" v-html="highlightedBody"></pre>
-                    </div>
-                  </div>
-                </div>
-                <div class="editor-actions">
-                  <a-button size="small" @click="zoomOut" class="zoom-btn">
-                    <template #icon><minus-outlined /></template>
-                  </a-button>
-                  <a-button size="small" @click="resetZoom" class="zoom-btn">
-                    {{ fontSize }}px
-                  </a-button>
-                  <a-button size="small" @click="zoomIn" class="zoom-btn">
-                    <template #icon><plus-outlined /></template>
-                  </a-button>
-                  <a-button size="small" @click="formatCode">
-                    <template #icon><code-outlined /></template>
-                    {{ t('request.prettify') }}
-                  </a-button>
-                </div>
+                <JsonEditor
+                  v-model="jsonBody"
+                  @update:content="handleBodyInput"
+                />
               </div>
 
               <div v-if="bodyType === 'form-data'" class="form-data-list">
@@ -147,68 +118,15 @@
 
       <div class="response-section">
         <a-spin :spinning="isLoading" tip="Loading...">
-          <div v-if="response" class="response-panel">
-            <div class="response-header">
-              <div class="response-info">
-                <div class="response-status">
-                  <span class="label">{{ t('request.status') }}:</span>
-                  <a-tag :color="getStatusColor(response.status)">{{ response.status }}</a-tag>
-                </div>
-                <div class="response-time">
-                  <span class="label">{{ t('request.time') }}:</span>
-                  <span>{{ response.time }}ms</span>
-                </div>
-                <div class="response-size">
-                  <span class="label">{{ t('request.size') }}:</span>
-                  <span>{{ getResponseSize }}</span>
-                </div>
-              </div>
-            </div>
-
-            <div class="response-tabs">
-              <a-tabs v-model:activeKey="responseTab">
-                <a-tab-pane key="body" :tab="t('request.response')">
-                  <div class="response-body">
-                    <div class="editor-wrapper">
-                      <div class="editor-container">
-                        <div class="line-numbers">
-                          <div v-for="i in getLineCount(formattedResponse)" :key="i" class="line-number">{{ i }}</div>
-                        </div>
-                        <div class="editor-content">
-                          <pre class="editor-highlight response-highlight" v-html="highlightedResponse"></pre>
-                        </div>
-                      </div>
-                    </div>
-                    <div class="editor-actions">
-                      <a-button size="small" @click="copyResponse">
-                        <template #icon><copy-outlined /></template>
-                        {{ t('request.copy') }}
-                      </a-button>
-                      <a-button size="small" @click="downloadResponse">
-                        <template #icon><download-outlined /></template>
-                        {{ t('request.download') }}
-                      </a-button>
-                      <a-button size="small" @click="formatCode">
-                        <template #icon><code-outlined /></template>
-                        {{ t('request.prettify') }}
-                      </a-button>
-                    </div>
-                  </div>
-                </a-tab-pane>
-
-                <a-tab-pane key="headers" :tab="t('request.headers')">
-                  <div class="response-headers">
-                    <div v-for="(value, key) in response.headers" :key="key" class="header-item">
-                      <span class="header-key">{{ key }}:</span>
-                      <span class="header-value">{{ value }}</span>
-                    </div>
-                  </div>
-                </a-tab-pane>
-              </a-tabs>
-            </div>
-          </div>
+          <ResponsePanel
+            v-if="response"
+            :content="formattedResponse"
+            :status="response.status"
+            :responseSize="getResponseSize"
+            :responseTime="response.time"
+          />
           <div v-else class="empty-response">
-            <div class="empty-text">{{ t('response.empty') }}</div>
+            <div class="empty-message">{{ t('request.noResponse') }}</div>
           </div>
         </a-spin>
       </div>
@@ -407,6 +325,13 @@
   border-top: 1px solid var(--color-border);
   padding-top: 16px;
   min-height: 0;
+  overflow: hidden;
+}
+
+.response-section :deep(.ant-spin-container) {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
 }
 
 .response-panel {
@@ -798,6 +723,133 @@
 :deep(.hljs-punctuation) {
   color: #9da5b4;
 }
+
+.editor-content {
+  position: relative;
+  width: 100%;
+  height: 300px;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.code-editor {
+  position: absolute !important;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  font-family: 'Fira Code', monospace;
+  font-size: 14px;
+  line-height: 1.5;
+  padding: 12px;
+  color: transparent;
+  caret-color: var(--color-text);
+  background: transparent;
+  resize: none;
+  z-index: 2;
+}
+
+.code-editor:focus {
+  outline: none;
+  border-color: var(--color-primary);
+}
+
+.editor-highlight {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 12px;
+  font-family: 'Fira Code', monospace;
+  font-size: 14px;
+  line-height: 1.5;
+  pointer-events: none;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  background: var(--color-bg-container);
+  z-index: 1;
+}
+
+:deep(.hljs) {
+  background: transparent;
+  padding: 0;
+}
+
+:deep(.ant-tabs-content) {
+  height: 100%;
+}
+
+:deep(.ant-tabs-tabpane) {
+  height: 100%;
+  padding: 16px;
+}
+
+:deep(.ant-form-item) {
+  margin-bottom: 16px;
+}
+
+:deep(.ant-form-item-label) {
+  padding-bottom: 4px;
+}
+
+:deep(.ant-input) {
+  font-family: 'Fira Code', monospace;
+}
+
+:deep(.ant-input-textarea-show-count::after) {
+  position: absolute;
+  bottom: 8px;
+  right: 8px;
+  color: var(--color-text-secondary);
+  background: var(--color-bg-container);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 12px;
+}
+
+/* 添加滚动条样式 */
+.editor-content ::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.editor-content ::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.editor-content ::-webkit-scrollbar-thumb {
+  background: var(--color-border);
+  border-radius: 4px;
+}
+
+.editor-content ::-webkit-scrollbar-thumb:hover {
+  background: var(--color-text-secondary);
+}
+
+/* 确保文本区域和高亮层的滚动同步 */
+.code-editor, .editor-highlight {
+  overflow: auto;
+  white-space: pre;
+  tab-size: 2;
+  -moz-tab-size: 2;
+}
+
+.empty-response {
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-bg-container);
+  border-radius: 8px;
+}
+
+.empty-message {
+  color: var(--color-text-secondary);
+  font-size: 14px;
+}
 </style>
 
 <script lang="ts" setup>
@@ -813,6 +865,8 @@ import hljs from 'highlight.js/lib/core'
 import json from 'highlight.js/lib/languages/json'
 import 'highlight.js/styles/atom-one-dark.css'
 import type { RequestMethod, ResponseData } from '../types/request'
+import ResponsePanel from './ResponsePanel.vue'
+import JsonEditor from './JsonEditor/index.vue'
 
 // 初始化代码高亮
 hljs.registerLanguage('json', json)
@@ -895,7 +949,13 @@ const formatJsonString = (data: any): string => {
 // 计算属性 - 格式化的响应内容
 const formattedResponse = computed(() => {
   if (!response.value?.data) return ''
-  return formatJsonString(response.value.data)
+  try {
+    return typeof response.value.data === 'string' 
+      ? response.value.data 
+      : JSON.stringify(response.value.data, null, 2)
+  } catch {
+    return String(response.value.data)
+  }
 })
 
 // 计算属性 - 格式化的请求体

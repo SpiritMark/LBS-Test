@@ -1,0 +1,43 @@
+{
+  "app": {
+    "title": "API 테스트 도구",
+    "logo": "API 테스터",
+    "theme": "테마",
+    "customTheme": "사용자 정의 테마",
+    "primary": "주 색상",
+    "background": "배경색",
+    "language": "언어",
+    "layout": "레이아웃"
+  },
+  "nav": {
+    "request": "API 테스트",
+    "collection": "컬렉션",
+    "history": "기록",
+    "settings": "설정"
+  },
+  "request": {
+    "send": "전송",
+    "sendAndDownload": "전송 및 다운로드",
+    "url": "요청 URL 입력",
+    "error": "요청 실패",
+    "save": "저장",
+    "params": "매개변수",
+    "headers": "헤더",
+    "body": "본문",
+    "response": "응답",
+    "status": "상태",
+    "time": "시간",
+    "copy": "복사",
+    "copySuccess": "복사 성공",
+    "copyError": "복사 실패",
+    "prettify": "정리",
+    "prettifySuccess": "정리 성공",
+    "prettifyError": "정리 실패",
+    "invalidJson": "잘못된 JSON 형식",
+    "key": "키",
+    "value": "값",
+    "addParam": "매개변수 추가",
+    "addHeader": "헤더 추가",
+    "addFormData": "폼 데이터 추가"
+  }
+} 
