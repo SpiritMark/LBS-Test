@@ -1,5 +1,5 @@
 <template>
-  <div class="request-panel">
+  <div id="request-panel" class="request-panel">
     <div class="request-header">
       <div class="url-input-group">
         <a-select
@@ -33,6 +33,29 @@
             </a-menu>
           </template>
         </a-dropdown-button>
+
+        <a-dropdown>
+          <a-button>
+            {{ t('request.examples') }}
+            <DownOutlined />
+          </a-button>
+          <template #overlay>
+            <a-menu>
+              <a-menu-item @click="loadExample('GET')">
+                {{ t('request.getExample') }}
+              </a-menu-item>
+              <a-menu-item @click="loadExample('POST')">
+                {{ t('request.postExample') }}
+              </a-menu-item>
+              <a-menu-item @click="loadExample('PUT')">
+                {{ t('request.putExample') }}
+              </a-menu-item>
+              <a-menu-item @click="loadExample('DELETE')">
+                {{ t('request.deleteExample') }}
+              </a-menu-item>
+            </a-menu>
+          </template>
+        </a-dropdown>
       </div>
     </div>
 
@@ -157,11 +180,12 @@
   display: flex;
   flex-direction: column;
   min-height: 0;
+  height: calc(100vh - 80px);
 }
 
 .request-content {
   height: 45%;
-  min-height: 200px;
+  min-height: 400px;
   display: flex;
   flex-direction: column;
 }
@@ -184,12 +208,17 @@
 
 .request-content :deep(.ant-tabs-content) {
   height: 100%;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
 }
 
 .request-content :deep(.ant-tabs-tabpane) {
   height: 100%;
-  padding: 16px;
-  overflow-y: auto;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 0 !important;
 }
 
 .params-list,
@@ -234,10 +263,18 @@
 }
 
 .editor-wrapper {
+  flex: 1;
+  min-height: 400px;
   position: relative;
-  border: 1px solid var(--color-border);
-  border-radius: 6px;
+  border-radius: 16px;
   background: var(--color-bg-container);
+  overflow: hidden;
+  
+  box-shadow: 
+    8px 8px 16px rgba(0, 0, 0, 0.1),
+    -8px -8px 16px rgba(255, 255, 255, 0.7);
+  border: none;
+  padding: 2px;
 }
 
 .json-input {
@@ -320,12 +357,12 @@
 
 .response-section {
   height: 55%;
+  min-height: 300px;
   display: flex;
   flex-direction: column;
   border-top: 1px solid var(--color-border);
   padding-top: 16px;
-  min-height: 0;
-  overflow: hidden;
+  overflow: auto;
 }
 
 .response-section :deep(.ant-spin-container) {
@@ -338,6 +375,9 @@
   flex: 1;
   display: flex;
   flex-direction: column;
+  background: var(--color-bg-container);
+  border-radius: var(--border-radius);
+  box-shadow: var(--box-shadow);
   overflow: hidden;
 }
 
@@ -476,6 +516,7 @@
 .action-buttons {
   display: flex;
   gap: 8px;
+  align-items: center;
 }
 
 .action-buttons :deep(.ant-btn) {
@@ -490,6 +531,7 @@
   height: 40px;
   display: flex;
   align-items: center;
+  gap: 4px;
 }
 
 .json-preview,
@@ -573,23 +615,19 @@
 .json-editor {
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  height: 100%;
-}
-
-.editor-wrapper {
-  flex: 1;
-  position: relative;
-  border: 1px solid var(--color-border);
-  border-radius: 6px;
-  background: var(--color-bg-elevated);
-  overflow: hidden;
+  gap: 12px;
+  height: calc(100% - 48px);
+  padding: 16px;
 }
 
 .editor-container {
-  display: flex;
-  height: 300px;
-  overflow: auto;
+  height: 100%;
+  min-height: 400px;
+  background: var(--color-bg-container);
+  border-radius: 14px;
+  box-shadow: 
+    inset 2px 2px 5px rgba(0, 0, 0, 0.05),
+    inset -2px -2px 5px rgba(255, 255, 255, 0.5);
 }
 
 .line-numbers {
@@ -610,50 +648,52 @@
 }
 
 .code-editor {
-  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', monospace !important;
-  font-size: v-bind(fontSize + 'px') !important;
-  line-height: v-bind(lineHeight + 'px') !important;
-  padding: 8px !important;
-  resize: none;
-  border: none;
-  background: transparent;
-  height: 100% !important;
+  width: 100%;
+  height: 100%;
+  padding: 16px;
+  font-family: 'Fira Code', monospace;
+  font-size: 14px;
+  line-height: 1.6;
   color: var(--color-text);
-}
-
-.code-editor:deep(.ant-input) {
-  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', monospace !important;
-  font-size: v-bind(fontSize + 'px') !important;
-  line-height: v-bind(lineHeight + 'px') !important;
-  padding: 0 !important;
-  resize: none;
-  border: none;
   background: transparent;
-  height: 100% !important;
+  border: none;
+  resize: none;
 }
 
-.code-editor:deep(.ant-input):focus {
-  box-shadow: none;
+.code-editor:focus {
+  outline: none;
 }
 
 .editor-actions {
   display: flex;
   justify-content: flex-end;
-  gap: 8px;
-  padding: 4px;
+  gap: 12px;
+  padding: 8px;
 }
 
-.zoom-btn {
-  min-width: 32px;
+.editor-actions :deep(.ant-btn) {
+  border-radius: 12px;
+  border: none;
+  padding: 8px 16px;
+  background: var(--color-bg-container);
+  color: var(--color-text);
+  
+  box-shadow: 
+    5px 5px 10px rgba(0, 0, 0, 0.1),
+    -5px -5px 10px rgba(255, 255, 255, 0.7);
+  transition: all 0.3s ease;
 }
 
-.zoom-btn:deep(.anticon) {
-  font-size: 12px;
+.editor-actions :deep(.ant-btn:hover) {
+  box-shadow: 
+    3px 3px 6px rgba(0, 0, 0, 0.1),
+    -3px -3px 6px rgba(255, 255, 255, 0.7);
 }
 
-.editor-content {
-  position: relative;
-  flex: 1;
+.editor-actions :deep(.ant-btn:active) {
+  box-shadow: 
+    inset 2px 2px 5px rgba(0, 0, 0, 0.1),
+    inset -2px -2px 5px rgba(255, 255, 255, 0.5);
 }
 
 .editor-highlight {
@@ -662,15 +702,58 @@
   left: 0;
   right: 0;
   bottom: 0;
-  margin: 0;
-  padding: 8px;
+  padding: 16px;
   pointer-events: none;
   white-space: pre-wrap;
-  word-break: break-all;
-  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', monospace;
-  font-size: v-bind(fontSize + 'px');
-  line-height: v-bind(lineHeight + 'px');
+  word-wrap: break-word;
+  color: var(--color-text);
+}
+
+.editor-content ::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.editor-content ::-webkit-scrollbar-track {
   background: transparent;
+}
+
+.editor-content ::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 4px;
+}
+
+.editor-content ::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.2);
+}
+
+:deep(.hljs) {
+  background: transparent;
+  color: var(--color-text);
+}
+
+:deep(.hljs-attr) {
+  color: #7c4dff;
+}
+
+:deep(.hljs-string) {
+  color: #00b8d4;
+}
+
+:deep(.hljs-number) {
+  color: #00bfa5;
+}
+
+:deep(.hljs-boolean) {
+  color: #7c4dff;
+}
+
+:deep(.hljs-null) {
+  color: #ff5252;
+}
+
+:deep(.hljs-punctuation) {
+  color: #78909c;
 }
 
 .response-highlight {
@@ -780,11 +863,17 @@
 
 :deep(.ant-tabs-content) {
   height: 100%;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
 }
 
 :deep(.ant-tabs-tabpane) {
   height: 100%;
-  padding: 16px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 0 !important;
 }
 
 :deep(.ant-form-item) {
@@ -857,7 +946,7 @@ import { ref, computed, h } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { message } from 'ant-design-vue'
 import axios, { CancelTokenSource } from 'axios'
-import { DeleteOutlined, CopyOutlined, CodeOutlined, LoadingOutlined, PlusOutlined, MinusOutlined, DownloadOutlined } from '@ant-design/icons-vue'
+import { DeleteOutlined, CopyOutlined, CodeOutlined, LoadingOutlined, PlusOutlined, MinusOutlined, DownloadOutlined, DownOutlined } from '@ant-design/icons-vue'
 import { downloadData } from '../utils/download'
 import { parseCurl } from '../utils/curlParser'
 import { HistoryManager } from '../utils/historyManager'
@@ -1020,7 +1109,7 @@ const getMethodColor = (methodName: RequestMethod) => {
   return colors[methodName] || '#666'
 }
 
-// 修改发送请求的类型定义
+// 改送请求的类型定义
 interface RequestConfig {
   method: RequestMethod
   url: string
@@ -1059,7 +1148,7 @@ const buildHeaders = () => {
   return result
 }
 
-// 构建请求数据
+// 建请求数据
 const buildRequestData = () => {
   if (bodyType.value === 'none') {
     return undefined
@@ -1115,16 +1204,22 @@ const sendRequest = async () => {
     })
 
     const endTime = Date.now()
-    response.value = {
+    const responseData = {
       status: res.status,
-      statusText: res.statusText,
-      headers: res.headers,
+      headers: Object.fromEntries(
+        Object.entries(res.headers).map(([key, value]) => [
+          key,
+          Array.isArray(value) ? value.join(', ') : String(value)
+        ])
+      ),
       data: res.data,
       time: endTime - startTime
     }
 
-    // 保存到历史记录
-    historyManager.add({
+    response.value = responseData
+
+    // 构建历史记录
+    const historyRecord: HistoryRecord = {
       method: method.value,
       url: url.value,
       headers: headers.value,
@@ -1132,9 +1227,13 @@ const sendRequest = async () => {
       bodyType: bodyType.value,
       ...(bodyType.value === 'json' ? { jsonBody: jsonBody.value } : {}),
       ...(bodyType.value === 'form-data' ? { formData: formData.value } : {}),
-      response: response.value,
+      response: responseData,
       timestamp: new Date().toISOString()
-    })
+    }
+
+    // 保存到历史记录
+    historyManager.add(historyRecord)
+    console.log('Request saved to history:', historyRecord) // 添加调试日志
 
   } catch (error: any) {
     if (axios.isCancel(error)) {
@@ -1182,20 +1281,40 @@ const sendAndDownload = async () => {
       cancelToken: source.token
     })
 
-    // 从响应头或 URL 中获取文件名
+    // 从响应头中获取文件名
     let filename = ''
-    const contentDisposition = res.headers['content-disposition']
-    if (contentDisposition) {
-      const filenameMatch = contentDisposition.match(/filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/)
-      if (filenameMatch) {
-        filename = filenameMatch[1].replace(/['"]/g, '')
+    const disposition = res.headers['content-disposition']
+    if (disposition) {
+      const matches = /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/.exec(disposition)
+      if (matches?.[1]) {
+        filename = matches[1].replace(/['"]/g, '')
       }
     }
+    
+    // 如果没有文件名，从URL或时间戳生成
     if (!filename) {
-      filename = url.value.split('/').pop() || 'download'
+      const urlFilename = url.value.split('/').pop()
+      filename = urlFilename || `download_${Date.now()}`
     }
 
-    downloadData(res.data, filename, res.headers['content-type'])
+    // 从响应头获取正确的 MIME 类型
+    const contentType = res.headers['content-type'] || 'application/octet-stream'
+
+    // 创建 Blob 对象
+    const blob = new Blob([res.data], { type: contentType })
+    
+    // 创建下载链接
+    const downloadUrl = window.URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = downloadUrl
+    link.download = filename
+    document.body.appendChild(link)
+    link.click()
+    
+    // 清理
+    document.body.removeChild(link)
+    window.URL.revokeObjectURL(downloadUrl)
+    
     message.success(t('request.downloadSuccess'))
   } catch (error: any) {
     if (axios.isCancel(error)) {
@@ -1282,17 +1401,38 @@ const cancelRequest = () => {
 }
 
 // 加载请求
-const loadRequest = (request: any) => {
-  method.value = request.method
-  url.value = request.url
-  headers.value = request.headers || []
-  params.value = request.params || []
-  bodyType.value = request.bodyType || 'none'
+const loadRequest = (record: HistoryRecord) => {
+  // 加载基本信息
+  method.value = record.method as RequestMethod
+  url.value = record.url
   
-  if (request.bodyType === 'json' && request.jsonBody) {
-    jsonBody.value = request.jsonBody
-  } else if (request.bodyType === 'form-data' && request.formData) {
-    formData.value = request.formData
+  // 加载参数
+  params.value = record.params || []
+  
+  // 加载请求头
+  headers.value = record.headers || []
+  
+  // 加载请求体
+  bodyType.value = record.bodyType
+  if (record.bodyType === 'json' && record.jsonBody) {
+    jsonBody.value = record.jsonBody
+  } else if (record.bodyType === 'form-data' && record.formData) {
+    formData.value = record.formData
+  }
+  
+  // 切换到对应的标签页
+  if (record.bodyType !== 'none') {
+    activeTab.value = 'body'
+  }
+
+  // 加载响应结果
+  if (record.response) {
+    response.value = {
+      status: record.response.status,
+      headers: record.response.headers,
+      data: record.response.data,
+      time: record.response.time
+    }
   }
 }
 
@@ -1405,6 +1545,45 @@ const downloadResponse = () => {
   a.click()
   document.body.removeChild(a)
   URL.revokeObjectURL(url)
+}
+
+const loadExample = (methodType: RequestMethod) => {
+  method.value = methodType
+  
+  switch (methodType) {
+    case 'GET':
+      url.value = 'https://httpbin.org/get'
+      bodyType.value = 'none'
+      break
+    case 'POST':
+      url.value = 'https://httpbin.org/post'
+      bodyType.value = 'json'
+      jsonBody.value = JSON.stringify({
+        name: "example",
+        time: new Date().toISOString()
+      }, null, 2)
+      break
+    case 'PUT':
+      url.value = 'https://httpbin.org/put'
+      bodyType.value = 'json'
+      jsonBody.value = JSON.stringify({
+        id: 1,
+        name: "updated example",
+        time: new Date().toISOString()
+      }, null, 2)
+      break
+    case 'DELETE':
+      url.value = 'https://httpbin.org/delete'
+      bodyType.value = 'none'
+      break
+  }
+  
+  // 重置其他参数
+  params.value = []
+  headers.value = []
+  formData.value = []
+  
+  message.success(t('request.exampleLoaded'))
 }
 
 defineExpose({

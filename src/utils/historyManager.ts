@@ -1,68 +1,57 @@
 import type { RequestHistory } from '../types/history'
 
+export interface HistoryRecord {
+  method: string;
+  url: string;
+  headers: Array<{ key: string; value: string }>;
+  params: Array<{ key: string; value: string }>;
+  bodyType: 'none' | 'json' | 'form-data';
+  jsonBody?: string;
+  formData?: Array<{ key: string; value: string }>;
+  response?: {
+    status: number;
+    headers?: Record<string, string>;
+    data: any;
+    time: number;
+  };
+  timestamp: string;
+}
+
 export class HistoryManager {
-  private readonly STORAGE_KEY = 'lbs-test-history'
-  private history: RequestHistory[] = []
+  private readonly storageKey = 'api_request_history';
+  private maxHistory = 50;
 
-  constructor() {
-    this.load()
-  }
-
-  private load(): void {
+  getHistory(): HistoryRecord[] {
     try {
-      const data = localStorage.getItem(this.STORAGE_KEY)
-      if (data) {
-        this.history = JSON.parse(data)
-      }
+      const data = localStorage.getItem(this.storageKey);
+      return data ? JSON.parse(data) : [];
     } catch (error) {
-      console.error('Failed to load history:', error)
-      this.history = []
+      console.error('Failed to load history:', error);
+      return [];
     }
   }
 
-  private save(): void {
+  add(record: HistoryRecord) {
     try {
-      localStorage.setItem(this.STORAGE_KEY, JSON.stringify(this.history))
+      let history = this.getHistory();
+      const newRecord = {
+        ...record,
+        timestamp: new Date().toISOString()
+      };
+      history.unshift(newRecord);
+      history = history.slice(0, this.maxHistory);
+      localStorage.setItem(this.storageKey, JSON.stringify(history));
+      console.log('History saved:', history);
     } catch (error) {
-      console.error('Failed to save history:', error)
+      console.error('Failed to save history:', error);
     }
   }
 
-  getAll(): RequestHistory[] {
-    return this.history
-  }
-
-  add(request: Omit<RequestHistory, 'id' | 'createdAt' | 'updatedAt'>): void {
-    const now = Date.now()
-    const newRequest: RequestHistory = {
-      ...request,
-      id: `history_${now}_${Math.random().toString(36).substr(2, 9)}`,
-      createdAt: now,
-      updatedAt: now
+  clear() {
+    try {
+      localStorage.removeItem(this.storageKey);
+    } catch (error) {
+      console.error('Failed to clear history:', error);
     }
-    this.history.unshift(newRequest)
-    this.save()
-  }
-
-  update(id: string, updates: Partial<RequestHistory>): void {
-    const index = this.history.findIndex(item => item.id === id)
-    if (index !== -1) {
-      this.history[index] = {
-        ...this.history[index],
-        ...updates,
-        updatedAt: Date.now()
-      }
-      this.save()
-    }
-  }
-
-  delete(id: string): void {
-    this.history = this.history.filter(item => item.id !== id)
-    this.save()
-  }
-
-  clear(): void {
-    this.history = []
-    this.save()
   }
 } 

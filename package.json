@@ -14,17 +14,24 @@
   },
   "dependencies": {
     "@ant-design/icons-vue": "^7.0.1",
+    "@codemirror/basic-setup": "^0.20.0",
+    "@codemirror/lang-json": "^6.0.1",
+    "@codemirror/lint": "^6.8.4",
+    "@codemirror/search": "^6.5.8",
+    "@codemirror/theme-one-dark": "^6.1.2",
     "@electron/remote": "^2.1.2",
     "@monaco-editor/loader": "^1.4.0",
     "ant-design-vue": "^4.0.7",
     "axios": "^1.6.2",
+    "codemirror": "^6.0.1",
     "highlight.js": "^11.9.0",
+    "mitt": "^3.0.1",
     "monaco-editor": "^0.52.0",
     "pinia": "^2.1.7",
     "vue": "^3.3.9",
     "vue-i18n": "^9.8.0",
     "vue-json-pretty": "^2.4.0",
-    "vue-router": "^4.2.5"
+    "vue-router": "4"
   },
   "devDependencies": {
     "@types/node": "^20.10.3",

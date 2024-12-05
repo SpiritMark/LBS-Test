@@ -21,8 +21,16 @@
     "key": "键",
     "value": "值",
     "addParam": "添加参数",
-    "addHeader": "添加请求头",
-    "addFormData": "添加表单数据"
+    "examples": "示例请求",
+    "getExample": "GET 请求示例",
+    "postExample": "POST 请求示例",
+    "putExample": "PUT 请求示例",
+    "deleteExample": "DELETE 请求示例",
+    "exampleLoaded": "示例请求已加载",
+    "downloadSuccess": "下载成功",
+    "downloadFailed": "下载失败",
+    "cancelled": "请求已取消",
+    "urlRequired": "请输入URL"
   },
   "collection": {
     "saveRequest": "保存请求",
@@ -52,12 +60,15 @@
     "deleteSuccess": "请求删除成功",
     "clearTitle": "清空历史",
     "clearMessage": "确定要清空所有历史记录吗？",
-    "clearSuccess": "历史记录已清空"
+    "clearSuccess": "历史记录已清空",
+    "load": "加载",
+    "loadSuccess": "加载请求成功",
+    "loadError": "加载请求失败"
   },
   "settings": {
     "title": "设置",
     "appearance": "外观",
-    "theme": "主题",
+    "theme": "主",
     "language": "语言",
     "layout": "布局",
     "editor": "编辑器",

@@ -98,7 +98,7 @@ const toggleFold = (start: number, end: number) => {
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
   display: flex;
   flex-direction: column;
-  height: 100%;
+  height: 200%;
   overflow: hidden;
 }
 
@@ -119,6 +119,7 @@ const toggleFold = (start: number, end: number) => {
 .editor-content {
   display: flex;
   flex: 1;
+  height: 500px;
   overflow: hidden;
   position: relative;
 }

@@ -1,0 +1,127 @@
+.response-panel {
+  position: fixed;
+  bottom: 0;
+  right: 0;
+  width: 300px;
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  padding: 15px;
+  margin: 10px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+  display: block;
+  visibility: visible;
+  opacity: 1;
+  transform: none;
+}
+
+.response-content {
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.response-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.response-title {
+  font-weight: bold;
+  color: #333;
+}
+
+/* 添加JSON折叠相关样式 */
+.json-collapsible {
+  position: relative;
+  cursor: pointer;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  transition: all 0.3s ease;
+  padding-left: 20px;
+}
+
+.json-collapsible::before {
+  content: "";
+  position: absolute;
+  left: 5px;
+  top: 50%;
+  transform: translateY(-50%) rotate(-90deg);
+  width: 0;
+  height: 0;
+  border-left: 6px solid transparent;
+  border-right: 6px solid transparent;
+  border-top: 6px solid #666;
+  transition: transform 0.3s ease;
+}
+
+.json-collapsible.collapsed::before {
+  transform: translateY(-50%) rotate(0deg);
+}
+
+.json-collapsible:hover::before {
+  border-top-color: #333;
+}
+
+.json-collapsible.collapsed::after {
+  content: "...";
+  position: absolute;
+  right: 0;
+  background: linear-gradient(90deg, transparent, #fff 40%);
+  padding-left: 20px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.json-collapsible:not(.collapsed) {
+  white-space: pre-wrap;
+  max-height: none;
+}
+
+/* JSON内容的基础样式 */
+.json-content {
+  font-family: monospace;
+  padding: 8px;
+  background: #f5f5f5;
+  border-radius: 4px;
+  margin: 5px 0;
+}
+
+/* 展开/折叠时的过渡动画 */
+.json-collapsible {
+  transition: max-height 0.3s ease-in-out;
+}
+
+/* 在已有样式的基础上添加示例按钮的样式 */
+.url-input-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.example-btn {
+  padding: 6px 12px;
+  background: #f0f0f0;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  color: #666;
+  transition: all 0.2s ease;
+}
+
+.example-btn:hover {
+  background: #e0e0e0;
+  color: #333;
+}
+
+/* 调整输入框样式以适应新的布局 */
+.url-input {
+  flex: 1;
+  padding: 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+} 

@@ -2,245 +2,144 @@
   <div class="history-panel">
     <div class="history-header">
       <h2>{{ t('history.title') }}</h2>
-      <a-button type="text" @click="clearHistory">{{ t('history.clear') }}</a-button>
+      <a-button type="primary" danger @click="clearHistory">
+        {{ t('history.clear') }}
+      </a-button>
     </div>
-    <div class="history-content">
+
+    <div class="history-list">
       <a-empty v-if="history.length === 0" :description="t('history.empty')" />
       <a-list v-else>
-        <a-list-item v-for="item in history" :key="item.id">
+        <a-list-item v-for="(record, index) in history" :key="index">
           <div class="history-item">
-            <div class="history-item-header">
-              <span class="history-item-name">{{ item.name || item.url }}</span>
-              <div class="history-item-actions">
-                <a-button type="link" @click="loadRequest(item)">
-                  <template #icon><loading-outlined /></template>
-                  {{ t('history.load') }}
-                </a-button>
-                <a-button type="text" @click="editRequest(item)">
-                  <template #icon><edit-outlined /></template>
-                </a-button>
-                <a-button type="text" @click="deleteRequest(item)">
-                  <template #icon><delete-outlined /></template>
-                </a-button>
-              </div>
+            <div class="request-info">
+              <a-tag :color="getMethodColor(record.method)">{{ record.method }}</a-tag>
+              <span class="url">{{ record.url }}</span>
             </div>
-            <div class="history-item-info">
-              <a-tag :color="getMethodColor(item.method)">{{ item.method }}</a-tag>
-              <span class="history-item-url">{{ item.url }}</span>
-            </div>
-            <div class="history-item-time">
-              {{ new Date(item.updatedAt).toLocaleString() }}
+            <div class="actions">
+              <a-button type="primary" @click="loadRequest(record)">
+                {{ t('history.load') }}
+              </a-button>
             </div>
           </div>
         </a-list-item>
       </a-list>
     </div>
-
-    <a-modal
-      v-model:visible="saveModalVisible"
-      :title="t('history.save')"
-      @ok="saveRequest"
-    >
-      <a-form>
-        <a-form-item :label="t('history.name')">
-          <a-input v-model:value="requestName" :placeholder="t('history.namePlaceholder')" />
-        </a-form-item>
-      </a-form>
-    </a-modal>
   </div>
 </template>
 
 <script lang="ts" setup>
-import { ref, computed, onMounted } from 'vue'
-import { useAppStore } from '../store/app'
+import { ref, onMounted, nextTick, onUnmounted } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { message, Modal } from 'ant-design-vue'
-import { EditOutlined, DeleteOutlined, LoadingOutlined } from '@ant-design/icons-vue'
-import type { RequestHistory } from '../types/history'
-import { HistoryManager } from '../utils/historyManager'
+import { useRouter } from 'vue-router'
+import { message } from 'ant-design-vue'
+import { HistoryManager, type HistoryRecord } from '../utils/historyManager'
 
 const { t } = useI18n()
-const appStore = useAppStore()
+const router = useRouter()
+const history = ref<HistoryRecord[]>([])
 const historyManager = new HistoryManager()
-const history = ref<RequestHistory[]>([])
-const saveModalVisible = ref(false)
-const requestName = ref('')
-const currentEditId = ref('')
 
-const props = defineProps<{
-  currentRequest: {
-    method: string
-    url: string
-    headers: { key: string; value: string }[]
-    params: { key: string; value: string }[]
-    bodyType: 'none' | 'json' | 'form-data'
-    jsonBody?: string
-    formData?: { key: string; value: string }[]
-  }
-}>()
-
-const emit = defineEmits<{
-  (e: 'load', request: RequestHistory): void
-}>()
-
+// 加载历史记录
 const loadHistory = () => {
-  history.value = historyManager.getAll()
+  history.value = historyManager.getHistory()
 }
 
-onMounted(() => {
-  loadHistory()
-})
+// 清空历史记录
+const clearHistory = () => {
+  historyManager.clear()
+  history.value = []
+  message.success(t('history.clearSuccess'))
+}
 
+// 获取请求方法的颜色
 const getMethodColor = (method: string) => {
   const colors: Record<string, string> = {
-    GET: '#61affe',
-    POST: '#49cc90',
-    PUT: '#fca130',
-    DELETE: '#f93e3e',
-    PATCH: '#50e3c2',
-    HEAD: '#9012fe',
-    OPTIONS: '#0d5aa7'
+    GET: 'blue',
+    POST: 'green',
+    PUT: 'orange',
+    DELETE: 'red',
+    PATCH: 'cyan'
   }
-  return colors[method] || '#666'
+  return colors[method] || 'default'
 }
 
-const saveRequest = () => {
-  if (!requestName.value.trim()) {
-    message.error(t('history.nameRequired'))
-    return
+// 加载请求记录
+const loadRequest = async (record: HistoryRecord) => {
+  try {
+    // 跳转到请求页面
+    await router.push('/request');
+    
+    // 等待一下确保组件已经挂载
+    await nextTick();
+    
+    // 获取请求组件实例
+    const requestPanel = document.querySelector('#request-panel');
+    if (requestPanel && 'loadRequest' in requestPanel) {
+      (requestPanel as any).loadRequest(record);
+      message.success(t('history.loadSuccess'));
+    } else {
+      console.error('Request panel not found or loadRequest method not available');
+    }
+  } catch (error) {
+    console.error('Failed to load request:', error);
+    message.error(t('history.loadError'));
   }
+};
 
-  if (currentEditId.value) {
-    historyManager.update(currentEditId.value, {
-      name: requestName.value,
-      ...props.currentRequest,
-    })
-    message.success(t('history.updateSuccess'))
-  } else {
-    historyManager.add({
-      name: requestName.value,
-      ...props.currentRequest,
-    })
-    message.success(t('history.saveSuccess'))
-  }
+// 添加自动刷新历史记录的功能
+const refreshHistory = () => {
+  history.value = historyManager.getHistory();
+  console.log('History loaded:', history.value); // 添加调试日志
+};
 
-  saveModalVisible.value = false
-  requestName.value = ''
-  currentEditId.value = ''
-  loadHistory()
-}
-
-const editRequest = (item: RequestHistory) => {
-  currentEditId.value = item.id
-  requestName.value = item.name
-  saveModalVisible.value = true
-}
-
-const deleteRequest = (item: RequestHistory) => {
-  Modal.confirm({
-    title: t('history.deleteTitle'),
-    content: t('history.deleteMessage'),
-    onOk: () => {
-      historyManager.delete(item.id)
-      message.success(t('history.deleteSuccess'))
-      loadHistory()
-    },
-  })
-}
-
-const clearHistory = () => {
-  Modal.confirm({
-    title: t('history.clearTitle'),
-    content: t('history.clearMessage'),
-    onOk: () => {
-      historyManager.clear()
-      message.success(t('history.clearSuccess'))
-      loadHistory()
-    },
-  })
-}
-
-const loadRequest = (item: RequestHistory) => {
-  emit('load', item)
-  message.success(t('history.loadSuccess'))
-}
+onMounted(() => {
+  refreshHistory();
+  // 定期刷新历史记录
+  const interval = setInterval(refreshHistory, 5000);
+  
+  onUnmounted(() => {
+    clearInterval(interval);
+  });
+});
 </script>
 
 <style scoped>
 .history-panel {
-  width: 100%;
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  background: var(--color-bg-container);
-  border-radius: var(--border-radius);
-  overflow: hidden;
+  padding: 16px;
 }
 
 .history-header {
-  padding: 16px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  border-bottom: 1px solid var(--color-border);
-}
-
-.history-header h2 {
-  margin: 0;
-  color: var(--color-text);
-}
-
-.history-content {
-  flex: 1;
-  overflow: auto;
-  padding: 16px;
+  margin-bottom: 16px;
 }
 
 .history-item {
   width: 100%;
-}
-
-.history-item-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 8px;
+  gap: 16px;
 }
 
-.history-item-name {
-  font-weight: 500;
-  color: var(--color-text);
-}
-
-.history-item-actions {
-  display: flex;
-  gap: 8px;
-}
-
-.history-item-info {
+.request-info {
   display: flex;
   align-items: center;
   gap: 8px;
-  margin-bottom: 4px;
+  flex: 1;
 }
 
-.history-item-url {
+.url {
   color: var(--color-text-secondary);
-  font-size: 12px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-.history-item-time {
-  color: var(--color-text-secondary);
-  font-size: 12px;
-}
-
-:deep(.ant-list-item) {
-  padding: 16px !important;
-  border-radius: var(--border-radius);
-  transition: all 0.3s ease;
-}
-
-:deep(.ant-list-item:hover) {
-  background: var(--color-bg-layout);
+.actions {
+  display: flex;
+  gap: 8px;
 }
 </style> 

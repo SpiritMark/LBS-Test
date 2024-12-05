@@ -22,7 +22,17 @@
     "value": "Value",
     "addParam": "Add Parameter",
     "addHeader": "Add Header",
-    "addFormData": "Add Form Data"
+    "addFormData": "Add Form Data",
+    "examples": "Examples",
+    "getExample": "GET Example",
+    "postExample": "POST Example",
+    "putExample": "PUT Example",
+    "deleteExample": "DELETE Example",
+    "exampleLoaded": "Example request loaded",
+    "downloadSuccess": "Download successful",
+    "downloadFailed": "Download failed",
+    "cancelled": "Request cancelled",
+    "urlRequired": "URL is required"
   },
   "collection": {
     "saveRequest": "Save Request",
@@ -52,7 +62,10 @@
     "deleteSuccess": "Request deleted successfully",
     "clearTitle": "Clear History",
     "clearMessage": "Are you sure you want to clear all history?",
-    "clearSuccess": "History cleared successfully"
+    "clearSuccess": "History cleared successfully",
+    "load": "Load",
+    "loadSuccess": "Request loaded successfully",
+    "loadError": "Failed to load request"
   },
   "settings": {
     "title": "Settings",
